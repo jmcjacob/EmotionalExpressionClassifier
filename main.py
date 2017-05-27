@@ -1,7 +1,9 @@
-import cv2
-import train
 import argparse
+from run import run
+from train import train
 from lbpmapping import LBP
+from classify import classify
+from dataset import build_dataset
 
 
 def parse_args():
@@ -9,6 +11,9 @@ def parse_args():
 	parser = argparse.ArgumentParser(description=desc)
 
 	# General
+	parser.add_argument('--mode', type=str,
+						help='Model for the system, \'train\', \'classify\', \'dataset\', \'run\'')
+
 	parser.add_argument('--verbose', action='store_true', default=True,
 						help='Boolean flag indicating if statements should be printed to console.')
 
@@ -22,11 +27,11 @@ def parse_args():
 						help='The name of the models will be loaded/saved in the resource directory.')
 
 	# Training Parameters
-	parser.add_argument('--train', action='store_true', default=False,
-						help='Boolean flag indicating if the system will be training.')
+	parser.add_argument('--training_dir', type=str, default='/Training_data',
+						help='Directory of labeled images for training. Training and Dataset Building only.')
 
-	parser.add_argument('--training_dir', type=str, default='/Images',
-						help='Directory of labeled images for training. Training only.')
+	parser.add_argument('--testing_dir', type=str, default='/Testing_data',
+						help='Directory of labeled images for testing. Training and Dataset Building only.')
 
 	parser.add_argument('--epochs', type=int, default=1000,
 						help='The number of epochs each model will be trained for. Training only.')
@@ -36,13 +41,23 @@ def parse_args():
 
 	# Classification
 	parser.add_argument('--image', type=str,
-						help='The path to an image that will be classified.')
+						help='The path to an image that will be classified. Classification only.')
+
+	parser.add_argument('--classes', type=int,
+						help='The number of classifications in the model. Classification only.')
+
+	# Building Datasets
+	parser.add_argument('--data_dir', type=str, default='/Data',
+						help='Directory of origional Dataset. Dataset Building only.')
+
+	parser.add_argument('--dataset', type=str,
+						help='The dataset that is being processed.')
 
 	return parser.parse_args()
 
 
-def log(args, input_str):
-	if args.verbose:
+def log(args, input_str, override=False):
+	if args.verbose or override:
 		print input_str
 	if args.log != '':
 		file = open(args.log, 'a')
@@ -53,13 +68,19 @@ def log(args, input_str):
 def main():
 	global args
 	args = parse_args()
-	if args.train:
-		train.train(args)
+	if args.mode == 'train':
+		train(args)
+	elif args.mode == 'classify':
+		classify(args)
+	elif args.mode == 'dataset':
+		build_dataset(args)
+	elif args.mode == 'run':
+		run(args)
 	else:
-		pass # Classify
+		print 'Please select a mode using the tag --mode, use --help for help.'
 
-	lbp = LBP((256,256))
-	cv2.imshow('Image', lbp.map_lbp('~/Downloads/LBP_mapping_Matlab/example_image.png', 1, 8))
+	#lbp = LBP((256,256))
+	#cv2.imshow('Image', lbp.map_lbp('~/Downloads/LBP_mapping_Matlab/example_image.png', 1, 8))
 
 
 if __name__ == '__main__':
