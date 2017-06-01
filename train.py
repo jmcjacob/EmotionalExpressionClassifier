@@ -21,7 +21,7 @@ def train(args):
 	data = retrieve_data(args.training_dir + '/lbp')
 	main.log(args, str(time.clock() - start_time) + ' ' + str(len(data)) + ' images read across ' + str(len(data[0][1])) + ' classes')
 
-	lbp_classifier = Classifier(args, start_time, len(data[0][1]), args.resource_path, data[0][0].shape, colour=True, local=False)
+	lbp_classifier = Classifier(args, start_time, len(data[0][1]), args.resource_path, data[0][0].shape, colour=False, local=False)
 	accuracy = lbp_classifier.cross_validation(data, args.k_fold, args.epochs, (args.log + 'lbp'))
 	main.log(args, str(time.clock() - start_time) + ' ' + str(accuracy) + ' accuracy across ' + str(args.k_fold) + ' K folds')
 
@@ -45,12 +45,12 @@ def train(args):
 	data = retrieve_data(args.training_dir + '/front_lbp')
 	main.log(args, str(time.clock() - start_time) + ' ' + str(len(data)) + ' images read across ' + str(len(data[0][1])) + ' classes')
 
-	flbp_classifier = Classifier(args, start_time, len(data[0][1]), args.resource_path, data[0][0].shape, colour=True, local=False)
+	flbp_classifier = Classifier(args, start_time, len(data[0][1]), args.resource_path, data[0][0].shape, colour=False, local=False)
 	accuracy = flbp_classifier.cross_validation(data, args.k_fold, args.epochs, (args.log + 'flbp'))
 	main.log(args, str(time.clock() - start_time) + ' ' + str(accuracy) + ' accuracy across ' + str(args.k_fold) + ' K folds')
 
 	main.log(args, '\n---------- LBP, Frontalization, Locally Connected Layers ----------')
-	lflbp_classifier = Classifier(args, start_time, len(data[0][1]), args.resource_path, data[0][0].shape, colour=True, local=True)
+	lflbp_classifier = Classifier(args, start_time, len(data[0][1]), args.resource_path, data[0][0].shape, colour=False, local=True)
 	accuracy = lflbp_classifier.cross_validation(data, args.k_fold, args.epochs, (args.log + 'lflbp'))
 	main.log(args, str(time.clock() - start_time) + ' ' + str(accuracy) + ' accuracy across ' + str(args.k_fold) + ' K folds')
 

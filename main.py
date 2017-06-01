@@ -1,7 +1,9 @@
+import cv2
+import train
+import numpy
 import argparse
 from run import run
-from train import train
-from lbpmapping import LBP
+from skimage import feature
 from classify import classify
 from dataset import build_dataset
 
@@ -11,6 +13,8 @@ def parse_args():
 	parser = argparse.ArgumentParser(description=desc)
 
 	# General
+	parser.add_argument('--dev', action='store_true', default=False)
+
 	parser.add_argument('--mode', type=str,
 						help='Model for the system, \'train\', \'classify\', \'dataset\', \'run\'')
 
@@ -61,26 +65,32 @@ def log(args, input_str, override=False):
 		print input_str
 	if args.log != '':
 		file = open(args.log, 'a')
-		file.write(input_str)
+		file.write(input_str + '\n')
 		file.close()
 
 
 def main():
 	global args
 	args = parse_args()
-	if args.mode == 'train':
-		train(args)
-	elif args.mode == 'classify':
-		classify(args)
-	elif args.mode == 'dataset':
-		build_dataset(args)
-	elif args.mode == 'run':
-		run(args)
+	if not args.dev:
+		if args.mode == 'train':
+			train.train(args)
+		elif args.mode == 'classify':
+			classify(args)
+		elif args.mode == 'dataset':
+			build_dataset(args)
+		elif args.mode == 'run':
+			run(args)
+		else:
+			print 'Please select a mode using the tag --mode, use --help for help.'
 	else:
-		print 'Please select a mode using the tag --mode, use --help for help.'
+		image = cv2.imread('../../Pictures/jacob.jpg', cv2.IMREAD_GRAYSCALE)
+		image = image.astype(numpy.float64)
+		lbp = feature.local_binary_pattern(image.astype(numpy.float64), 8, 1, method='uniform')
+		lbp = lbp.astype(numpy.uint8)
+		lbp *= (255 / lbp.max())
+		cv2.imwrite('../../Pictures/jacob_lbp.jpg', lbp)
 
-	#lbp = LBP((256,256))
-	#cv2.imshow('Image', lbp.map_lbp('~/Downloads/LBP_mapping_Matlab/example_image.png', 1, 8))
 
 
 if __name__ == '__main__':

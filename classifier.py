@@ -76,7 +76,8 @@ class Classifier:
 		output = tf.concat([path1, path2], 0)
 		return tf.nn.max_pool(output, [1, 3, 3, 1], [1, 2, 2, 1], 'VALID')
 
-	def train(self, training_data, testing_data, epochs, log, batch_size=32, intervals=1):
+	def train(self, training_data, testing_data, epochs, log, intervals=1):
+		batch_size = self.args.batch_size
 		batches = self.split_data(training_data, batch_size)
 		cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(self.model, self.y))
 		optimizer = tf.train.AdamOptimizer().minimize(cost)
@@ -178,7 +179,8 @@ class Classifier:
 			saver.restore(sess, self.save_path + log + 'model')
 			return np.asarray(sess.run(self.model, feed_dict={self.x: data, self.keep_prob: 1.}))
 
-	def classify_batch(self, data, log, batch_size=32):
+	def classify_batch(self, data, log):
+		batch_size = self.args.batch_size
 		init, saver = tf.global_variables_initializer(), tf.train.Saver()
 		batches = self.split_data(data, batch_size)
 		labels, _y = np.zeros(0), []
