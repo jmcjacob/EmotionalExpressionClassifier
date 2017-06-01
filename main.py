@@ -25,7 +25,7 @@ def parse_args():
 						help='The file where files will be logged.')
 
 	parser.add_argument('--resource_path', type=str, default='/Resources',
-						help='Directory where models have/will be saved to.')
+						help='Directory where models will be saved to and necessary data will be stored.')
 
 	parser.add_argument('--model_name', type=str, default='model',
 						help='The name of the models will be loaded/saved in the resource directory.')
@@ -52,7 +52,10 @@ def parse_args():
 
 	# Building Datasets
 	parser.add_argument('--data_dir', type=str, default='/Data',
-						help='Directory of origional Dataset. Dataset Building only.')
+						help='Directory of original Dataset. Dataset Building only.')
+
+	parser.add_argument('--label_dir', type=str, default='/Data',
+						help='Directory of the labels used by some datasets. Dataset Building only.')
 
 	parser.add_argument('--dataset', type=str,
 						help='The dataset that is being processed.')
@@ -90,7 +93,6 @@ def main():
 		lbp = lbp.astype(numpy.uint8)
 		lbp *= (255 / lbp.max())
 		cv2.imwrite('../../Pictures/jacob_lbp.jpg', lbp)
-
 
 
 if __name__ == '__main__':
