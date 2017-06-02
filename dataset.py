@@ -95,25 +95,29 @@ def extract_images(args, start_time, image_files):
 
 	detector, count = dlib.get_frontal_face_detector(), 0
 	for image_file in training_data:
-		images = []
-		images.append(cv2.resize(cv2.imread(image_file[0], cv2.IMREAD_COLOR), (150, 150)))
-		images.append(noisy('sp', images[0]))
-		images.append(noisy('gauss', images[0]))
-		images.append(hue(noisy('sp', images[0]), 50))
-		images.append(hue(noisy('sp', images[0]), -50))
-		images.append(hue(noisy('gauss', images[0]), 50))
-		images.append(hue(noisy('gauss', images[0]), -50))
-		for image in images:
-			cv2.imwrite(args.training_data + '/rgb/' + str(image_file[1]) + '/' + str(count) + '.jpg', image)
-			lbp_image = feature.local_binary_pattern(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY).astype(np.float64), 8, 1, 'uniform')
-			cv2.imwrite(args.training_data + '/rgb/' + str(image_file[1]) + '/' + str(count + 1) + '.jpg', lbp_image)
-			frgb_image = 0
-			cv2.imwrite(args.training_data + '/rgb/' + str(image_file[1]) + '/' + str(count + 2) + '.jpg', frgb_image)
-			flbp_image = feature.local_binary_pattern(cv2.cvtColor(frgb_image, cv2.COLOR_BGR2GRAY).astype(np.float64), 8, 1, 'uniform')
-			cv2.imwrite(args.training_data + '/rgb/' + str(image_file[1]) + '/' + str(count + 3) + '.jpg', flbp_image)
-			count += 4
-			if count % 40:
-				main.log(args, str(time.clock() - start_time) + ' ' + str(count) + ' training images extracted')
+		image = cv2.imread(image_file[0], cv2.IMREAD_COLOR)
+		detections = detector(image, 1)
+		for _, detection in enumerate(detections):
+			face = image[detection.top():detection.bottom(), detection.left():detection.right()]
+			images = []
+			images.append(cv2.resize(face, (150, 150)))
+			images.append(noisy('sp', images[0]))
+			images.append(noisy('gauss', images[0]))
+			images.append(hue(noisy('sp', images[0]), 50))
+			images.append(hue(noisy('sp', images[0]), -50))
+			images.append(hue(noisy('gauss', images[0]), 50))
+			images.append(hue(noisy('gauss', images[0]), -50))
+			for image in images:
+				cv2.imwrite(args.training_data + '/rgb/' + str(image_file[1]) + '/' + str(count) + '.jpg', image)
+				lbp_image = feature.local_binary_pattern(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY).astype(np.float64), 8, 1, 'uniform')
+				cv2.imwrite(args.training_data + '/rgb/' + str(image_file[1]) + '/' + str(count + 1) + '.jpg', lbp_image)
+				frgb_image = 0
+				cv2.imwrite(args.training_data + '/rgb/' + str(image_file[1]) + '/' + str(count + 2) + '.jpg', frgb_image)
+				flbp_image = feature.local_binary_pattern(cv2.cvtColor(frgb_image, cv2.COLOR_BGR2GRAY).astype(np.float64), 8, 1, 'uniform')
+				cv2.imwrite(args.training_data + '/rgb/' + str(image_file[1]) + '/' + str(count + 3) + '.jpg', flbp_image)
+				count += 4
+				if count % 40:
+					main.log(args, str(time.clock() - start_time) + ' ' + str(count) + ' training images extracted')
 	main.log(args, str(time.clock() - start_time) + ' Training Images Extracted')
 
 	tcount = 0
