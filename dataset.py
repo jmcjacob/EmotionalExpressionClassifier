@@ -5,6 +5,7 @@ import main
 import time
 import random
 import numpy as np
+import frontalization
 from skimage import feature
 
 
@@ -92,57 +93,38 @@ def extract_images(args, start_time, image_files):
 	random.shuffle(shuffled)
 	training_data = shuffled[test_length:]
 	testing_data = shuffled[:test_length]
+	save_image(args, start_time, args.training_data, training_data, 'training')
+	save_image(args, start_time, args.testing_data, testing_data, 'testing')
 
+
+def save_image(args, start_time, save, data, type):
 	detector, count = dlib.get_frontal_face_detector(), 0
-	for image_file in training_data:
-		image = cv2.imread(image_file[0], cv2.IMREAD_COLOR)
+	front = frontalization.Front(args)
+	for image_file in data:
+		image = cv2.resize(cv2.imread(image_file[0], cv2.IMREAD_COLOR), (150, 150))
 		detections = detector(image, 1)
 		for _, detection in enumerate(detections):
 			face = image[detection.top():detection.bottom(), detection.left():detection.right()]
 			images = []
-			images.append(cv2.resize(face, (150, 150)))
+			images.append(face)
 			images.append(noisy('sp', images[0]))
 			images.append(noisy('gauss', images[0]))
 			images.append(hue(noisy('sp', images[0]), 50))
 			images.append(hue(noisy('sp', images[0]), -50))
 			images.append(hue(noisy('gauss', images[0]), 50))
 			images.append(hue(noisy('gauss', images[0]), -50))
-			for image in images:
-				cv2.imwrite(args.training_data + '/rgb/' + str(image_file[1]) + '/' + str(count) + '.jpg', image)
-				lbp_image = feature.local_binary_pattern(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY).astype(np.float64), 8, 1, 'uniform')
-				cv2.imwrite(args.training_data + '/rgb/' + str(image_file[1]) + '/' + str(count + 1) + '.jpg', lbp_image)
-				frgb_image = 0
-				cv2.imwrite(args.training_data + '/rgb/' + str(image_file[1]) + '/' + str(count + 2) + '.jpg', frgb_image)
+			for _image in images:
+				cv2.imwrite(save + '/rgb/' + str(image_file[1]) + '/' + str(count) + '.jpg', _image)
+				lbp_image = feature.local_binary_pattern(cv2.cvtColor(_image, cv2.COLOR_BGR2GRAY).astype(np.float64), 8, 1, 'uniform')
+				cv2.imwrite(save + '/rgb/' + str(image_file[1]) + '/' + str(count + 1) + '.jpg', lbp_image)
+				frgb_image = front.frontalized(image)
+				cv2.imwrite(save + '/rgb/' + str(image_file[1]) + '/' + str(count + 2) + '.jpg', frgb_image)
 				flbp_image = feature.local_binary_pattern(cv2.cvtColor(frgb_image, cv2.COLOR_BGR2GRAY).astype(np.float64), 8, 1, 'uniform')
-				cv2.imwrite(args.training_data + '/rgb/' + str(image_file[1]) + '/' + str(count + 3) + '.jpg', flbp_image)
+				cv2.imwrite(save + '/rgb/' + str(image_file[1]) + '/' + str(count + 3) + '.jpg', flbp_image)
 				count += 4
 				if count % 40:
-					main.log(args, str(time.clock() - start_time) + ' ' + str(count) + ' training images extracted')
-	main.log(args, str(time.clock() - start_time) + ' Training Images Extracted')
-
-	tcount = 0
-	for image_file in testing_data:
-		images = []
-		images.append(cv2.resize(cv2.imread(image_file[0], cv2.IMREAD_COLOR), (150, 150)))
-		images.append(noisy('sp', images[0]))
-		images.append(noisy('gauss', images[0]))
-		images.append(hue(noisy('sp', images[0]), 50))
-		images.append(hue(noisy('sp', images[0]), -50))
-		images.append(hue(noisy('gauss', images[0]), 50))
-		images.append(hue(noisy('gauss', images[0]), -50))
-		for image in images:
-			cv2.imwrite(args.testing_data + '/rgb/' + str(image_file[1]) + '/' + str(tcount) + '.jpg', image)
-			lbp_image = feature.local_binary_pattern(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY).astype(np.float64), 8, 1, 'uniform')
-			cv2.imwrite(args.testing_data + '/rgb/' + str(image_file[1]) + '/' + str(tcount + 1) + '.jpg', lbp_image)
-			frgb_image = 0
-			cv2.imwrite(args.testing_data + '/rgb/' + str(image_file[1]) + '/' + str(tcount + 2) + '.jpg', frgb_image)
-			flbp_image = feature.local_binary_pattern(cv2.cvtColor(frgb_image, cv2.COLOR_BGR2GRAY).astype(np.float64), 8, 1, 'uniform')
-			cv2.imwrite(args.testing_data + '/rgb/' + str(image_file[1]) + '/' + str(tcount + 3) + '.jpg', flbp_image)
-			tcount += 4
-			if tcount % 40:
-				main.log(args, str(time.clock() - start_time) + ' ' + str(tcount) + ' testing images extracted')
-	main.log(args, str(time.clock() - start_time) + ' Testing Images Extracted')
-	main.log(args, '\nExtracted ' + str(count) + ' training images and ' + str(tcount) + ' testing images in ' + str(time.clock() - start_time) + 's', True)
+					main.log(args, str(time.clock() - start_time) + ' ' + str(count) + ' ' + type +' images extracted')
+	main.log(args, str(time.clock() - start_time) + ' ' + type + ' Images Extracted')
 
 
 def noisy(noise_typ,image):

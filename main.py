@@ -2,7 +2,8 @@ import cv2
 import train
 import numpy
 import argparse
-from run import run
+import threading
+import run
 from skimage import feature
 from classify import classify
 from dataset import build_dataset
@@ -60,6 +61,10 @@ def parse_args():
 	parser.add_argument('--dataset', type=str,
 						help='The dataset that is being processed.')
 
+	# Run Parameters
+	parser.add_argument('--address', type=str,
+						help='The address to communicate with the MultiDS system.')
+
 	return parser.parse_args()
 
 
@@ -83,9 +88,14 @@ def main():
 		elif args.mode == 'dataset':
 			build_dataset(args)
 		elif args.mode == 'run':
-			run(args)
+			run_thread = run.MyThread(0, args)
+			network_thread = run.MyThread(1, args)
+			run_thread.start()
+			network_thread.start()
+			while network_thread.is_alive():
+				continue
 		else:
-			print 'Please select a mode using the tag --mode, use --help for help.'
+			log(args, 'Please select a mode using the tag --mode, use --help for help.', True)
 	else:
 		image = cv2.imread('../../Pictures/jacob.jpg', cv2.IMREAD_GRAYSCALE)
 		image = image.astype(numpy.float64)
