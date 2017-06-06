@@ -1,0 +1,3 @@
+[submodule "face_specific_augm"]
+	path = face_specific_augm
+	url = https://github.com/jmcjacob/face_specific_augm.git

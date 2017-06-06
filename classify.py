@@ -3,6 +3,7 @@ import dlib
 import main
 import time
 import numpy as np
+import frontalization
 from skimage import feature
 from classifier import Classifier
 
@@ -10,13 +11,13 @@ from classifier import Classifier
 def classify(args):
 	start_time = time.clock()
 	detector = dlib.get_frontal_face_detector()
-	image = cv2.imread(args.image, cv2.IMREAD_COLOR)
+	front = frontalization.Front(args)
+	image = cv2.resize(cv2.imread(args.image, cv2.IMREAD_COLOR), (150, 150))
 	detection = detector(image, 1)
 	for _, detection in enumerate(detection):
-		face = image[detection.top():detection.bottom(), detection.left():detection.right()]
-		rgb_image = cv2.resize(face, (150, 150))
+		rgb_image = image[detection.top():detection.bottom(), detection.left():detection.right()]
 		lbp_image = feature.local_binary_pattern(cv2.cvtColor(rgb_image, cv2.COLOR_BGR2GRAY).astype(np.float64), 8, 1, 'uniform')
-		frgb_image = 0  # Frontalization
+		frgb_image = front.frontalized(image)
 		flbp_image = feature.local_binary_pattern(cv2.cvtColor(frgb_image, cv2.COLOR_BGR2GRAY).astype(np.float64), 8, 1, 'uniform')
 
 		main.log(args, str(time.clock() - start_time) + ' Image Representations Extracted')
