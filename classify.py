@@ -16,7 +16,7 @@ def classify(args):
 	detection = detector(image, 1)
 	for _, detection in enumerate(detection):
 		rgb_image = image[detection.top():detection.bottom(), detection.left():detection.right()]
-		lbp_image = feature.local_binary_pattern(cv2.cvtColor(rgb_image, cv2.COLOR_BGR2GRAY).astype(np.float64), 8, 1, 'uniform')
+		lbp_image = feature.local_binary_pattern(cv2.cvtColor(rgb_image, cv2.COLOR_BGR2GRAY).astype(np.float64), 8, 1, 'uniform').astype(np.uint8)
 		frgb_image = front.frontalized(image)
 		flbp_image = feature.local_binary_pattern(cv2.cvtColor(frgb_image, cv2.COLOR_BGR2GRAY).astype(np.float64), 8, 1, 'uniform')
 

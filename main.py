@@ -97,12 +97,7 @@ def main():
 		else:
 			log(args, 'Please select a mode using the tag --mode, use --help for help.', True)
 	else:
-		image = cv2.imread('../../Pictures/jacob.jpg', cv2.IMREAD_GRAYSCALE)
-		image = image.astype(numpy.float64)
-		lbp = feature.local_binary_pattern(image.astype(numpy.float64), 8, 1, method='uniform')
-		lbp = lbp.astype(numpy.uint8)
-		lbp *= (255 / lbp.max())
-		cv2.imwrite('../../Pictures/jacob_lbp.jpg', lbp)
+		log(args, 'Dev mode...\n\nnothing happened')
 
 
 if __name__ == '__main__':
