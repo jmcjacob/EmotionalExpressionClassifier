@@ -8,7 +8,6 @@ import threading
 import websocket
 import numpy as np
 import frontalization
-import tensorflow as tf
 from skimage import feature
 from classifier import Classifier
 

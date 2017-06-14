@@ -1,10 +1,6 @@
-import cv2
 import train
-import numpy
 import argparse
-import threading
 import run
-from skimage import feature
 from classify import classify
 from dataset import build_dataset
 

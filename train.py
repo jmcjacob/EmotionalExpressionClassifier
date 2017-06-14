@@ -18,7 +18,7 @@ def train(args):
 	accuracy = rgb_classifier.train(train_data, test_data, args.epochs, (args.model_name + 'rgb'))
 	main.log(args, str(time.clock() - start_time) + ' ' + str(accuracy) + ' accuracy')
 
-	"""
+
 	main.log(args, '\n---------- LBP, No Frontalization, Convolutional Layers ----------')
 	train_data = retrieve_data(args.training_dir + '/lbp')
 	test_data = retrieve_data(args.testing_dir + '/lbp')
@@ -62,7 +62,6 @@ def train(args):
 	main.log(args, '\n Completed Training in ' + str(time.clock() - start_time) + 's')
 
 	accuracy(args, [rgb_classifier, lbp_classifier, frgb_classifier, lfrgb_classifier, flbp_classifier, lflbp_classifier])
-	"""
 
 def retrieve_data(image_directory):
 	data, label = [], 0
