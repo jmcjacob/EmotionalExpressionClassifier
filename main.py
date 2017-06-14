@@ -41,6 +41,9 @@ def parse_args():
 	parser.add_argument('--epochs', type=int, default=1000,
 						help='The number of epochs each model will be trained for. Training only.')
 
+	parser.add_argument('--batch_size', type=int, default=32,
+						help='The sizes of the batches used within training. Training only.')
+
 	parser.add_argument('--k_fold', type=int, default=5,
 						help='The number of cross validation folds will be trained and testing. Training only.')
 

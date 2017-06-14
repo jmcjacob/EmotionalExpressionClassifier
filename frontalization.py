@@ -1,4 +1,3 @@
-import cv2
 import face_specific_augm.check_resources as check
 import face_specific_augm.ThreeD_Model as ThreeD_Model
 import face_specific_augm.camera_calibration as camera
@@ -10,7 +9,7 @@ class Front:
 	def __init__(self, args):
 		self.args = args
 		check.check_dlib_landmark_weights(args)
-		self.model3d = ThreeD_Model.FaceModel(args.resource_path + 'model3D_aug_-00_01.mat', 'model3D')
+		self.model3d = ThreeD_Model.FaceModel(args.resource_path + 'model3Ddlib.mat', 'model3D') # This is wrong and needs to be changed!
 		self.eyemask = self.model3d.eyemask
 
 	def frontalized(self, image):

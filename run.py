@@ -114,6 +114,7 @@ def on_data(ws, data):
 			string += str(i) + ' '
 		print 'Sent: ' + string
 		ws.send(string.replace('[', '').replace(']', ''))
+		averages = []
 	elif data == 'CLOSE':
 		ws.close()
 

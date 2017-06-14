@@ -25,22 +25,22 @@ def classify(args):
 		classifications = []
 
 		rgb_classifier = Classifier(args, start_time, args.classes, args.resource_path, rgb_image.shape, colour=True, local=False)
-		classifications.append(rgb_classifier.classify(rgb_image, (args.log + 'rgb')))
+		classifications.append(rgb_classifier.classify(rgb_image, (args.model_name + 'rgb')))
 
 		lbp_classifier = Classifier(args, start_time, args.classes, args.resource_path, lbp_image.shape, colour=False, local=False)
-		classifications.append(lbp_classifier.classify(lbp_image, (args.log + 'lbp')))
+		classifications.append(lbp_classifier.classify(lbp_image, (args.model_name + 'lbp')))
 
 		frgb_classifier = Classifier(args, start_time, args.classes, args.resource_path, frgb_image.shape, colour=True, local=False)
-		classifications.append(frgb_classifier.classify(frgb_image, (args.log + 'frgb')))
+		classifications.append(frgb_classifier.classify(frgb_image, (args.model_name + 'frgb')))
 
 		lfrgb_classifier = Classifier(args, start_time, args.classes, args.resource_path, frgb_image.shape, colour=True, local=True)
-		classifications.append(lfrgb_classifier.classify(frgb_image, (args.log + 'lfrgb')))
+		classifications.append(lfrgb_classifier.classify(frgb_image, (args.model_name + 'lfrgb')))
 
 		flbp_classifier = Classifier(args, start_time, args.classes, args.resource_path, flbp_image.shape, colour=False, local=False)
-		classifications.append(flbp_classifier.classify(flbp_image, (args.log + 'flbp')))
+		classifications.append(flbp_classifier.classify(flbp_image, (args.model_name + 'flbp')))
 
 		lflbp_classifier = Classifier(args, start_time, args.classes, args.resource_path, flbp_image.shape, colour=False, local=True)
-		classifications.append(lflbp_classifier.classify(flbp_image, (args.log + 'lflbp')))
+		classifications.append(lflbp_classifier.classify(flbp_image, (args.model_name + 'lflbp')))
 
 		result = np.zeros(args.classes)
 		for classification in classifications:

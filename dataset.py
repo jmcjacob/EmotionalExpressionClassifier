@@ -28,7 +28,8 @@ def build_dataset(args):
 								label = int(float(read_file.readline()))
 								for i in range(-1, -6, -1):
 									image_file = sorted(os.listdir(args.data_dir + '/' + outer_folder + '/' + inner_folder))[i]
-									if not (data_type == 'png' or data_type == 'jpg' or data_type == 'tiff'):
+									data_type = image_file.split('.')[1]
+									if (data_type == 'png' or data_type == 'jpg' or data_type == 'tiff'):
 										image_files.append((args.data_dir + '/' + outer_folder + '/' + inner_folder + '/' + image_file, label))
 								neutral_file = sorted(os.listdir(args.data_dir + '/' + outer_folder + '/' + inner_folder))[0]
 								data_type = neutral_file.split('.')[1]
