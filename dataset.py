@@ -127,7 +127,7 @@ def save_image(args, start_time, save, data, type):
 				flbp_image *= (255 / flbp_image.max())
 				cv2.imwrite(save + '/flbp/' + str(image_file[1]) + '/' + str(count + 3) + '.jpg', flbp_image)
 				count += 4
-				if count % 40 == 0:
+				if count % 100 == 0:
 					main.log(args, '{:.5f}'.format(time.clock() - start_time) + 's ' + str(count) + ' ' + type +' images extracted')
 	main.log(args, str(time.clock() - start_time) + ' ' + type + ' Images Extracted')
 

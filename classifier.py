@@ -4,12 +4,13 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 from sklearn.metrics import classification_report
-from sklearn.model_selection import KFold
 
 
 class Classifier:
-	def __init__(self, args, start_time, num_classes, save_path, input_shape, local=False):
+	def __init__(self, args, start_time, num_classes, save_path, input_shape, scope_name, local=False):
+		tf.reset_default_graph()
 		self.args = args
+		self.scope_name = scope_name
 		self.start_time = start_time
 		self.x = tf.placeholder('float', [None, input_shape[0], input_shape[1], input_shape[2]])
 		self.y = tf.placeholder('float', [None, num_classes])
@@ -18,20 +19,21 @@ class Classifier:
 		self.save_path = save_path
 
 	def build_model(self, num_classes, input_shape, local):
-		model = tf.reshape(self.x, shape=[-1, input_shape[0], input_shape[1], input_shape[2]])
-		model = tf.pad(model, [[0, 0], [3, 3], [3, 3], [0, 0]], 'CONSTANT')
-		if local:
-			model = tf.nn.relu(self.local_layer(model, 7, 64, [1, 1, 1, 1], 'SAME', 'Local_w', 'Local_b'))
-		else:
-			model = tf.nn.conv2d(model, tf.Variable(tf.random_normal([7, 7, input_shape[2], 64])), [1, 3, 3, 1], 'VALID')
-			model = tf.nn.relu(tf.nn.bias_add(model, tf.Variable(tf.random_normal([64]))))
-		model = tf.nn.max_pool(model, [1, 3, 3, 1], [1, 2, 2, 1], 'VALID')
-		model = tf.nn.lrn(model)
-		model = self.featex(self.featex(model))
-		shape = model.get_shape().as_list()
-		shape = shape[1] * shape[2] * shape[3]
-		model = tf.reshape(model, (-1, shape))
-		return tf.matmul(model, tf.Variable(tf.random_normal([shape, num_classes])))
+		with tf.variable_scope(self.scope_name):
+			model = tf.reshape(self.x, shape=[-1, input_shape[0], input_shape[1], input_shape[2]])
+			model = tf.pad(model, [[0, 0], [3, 3], [3, 3], [0, 0]], 'CONSTANT')
+			if local:
+				model = tf.nn.relu(self.local_layer(model, 7, 64, [1, 1, 1, 1], 'SAME', 'Local_w', 'Local_b'))
+			else:
+				model = tf.nn.conv2d(model, tf.Variable(tf.random_normal([7, 7, input_shape[2], 64])), [1, 3, 3, 1], 'VALID')
+				model = tf.nn.relu(tf.nn.bias_add(model, tf.Variable(tf.random_normal([64]))))
+			model = tf.nn.max_pool(model, [1, 3, 3, 1], [1, 2, 2, 1], 'VALID')
+			model = tf.nn.lrn(model)
+			model = self.featex(self.featex(model))
+			shape = model.get_shape().as_list()
+			shape = shape[1] * shape[2] * shape[3]
+			model = tf.reshape(model, (-1, shape))
+			return tf.matmul(model, tf.Variable(tf.random_normal([shape, num_classes])))
 
 	@staticmethod
 	def local_layer(previous_layer, kernel_size, channels, strides, padding, weight_name, bias_name):
@@ -71,71 +73,49 @@ class Classifier:
 		return tf.nn.max_pool(output, [1, 3, 3, 1], [1, 2, 2, 1], 'VALID')
 
 	def train(self, training_data, testing_data, epochs, log, intervals=1):
-		batch_size = self.args.batch_size
-		batches = self.split_data(training_data, batch_size)
-		cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(self.model, self.y))
-		optimizer = tf.train.AdamOptimizer().minimize(cost)
-		correct_prediction = tf.equal(tf.argmax(self.model, 1), tf.argmax(self.y, 1))
-		accuracy = tf.reduce_mean(tf.cast(correct_prediction, 'float'))
+		with tf.variable_scope(self.scope_name):
+			batch_size = self.args.batch_size
+			batches = self.split_data(training_data, batch_size)
+			cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(self.model, self.y))
+			optimizer = tf.train.AdamOptimizer().minimize(cost)
+			correct_prediction = tf.equal(tf.argmax(self.model, 1), tf.argmax(self.y, 1))
+			accuracy = tf.reduce_mean(tf.cast(correct_prediction, 'float'))
 
-		init = tf.global_variables_initializer()
-		count = self.count_trainable_vars()
-		saver = tf.train.Saver()
+			init = self.init_scope()
+			count = self.count_trainable_vars()
+			saver = tf.train.Saver()
 
-		with tf.Session() as sess:
-			sess.run(init)
-			summary_writer = tf.summary.FileWriter(self.save_path + log, graph=tf.get_default_graph())
-			for epoch in range(epochs):
-				avg_loss, avg_acc = 0, 0
-				summary = tf.Summary()
-				for i in range(len(batches)):
-					x, y = [m[0] for m in batches[i]], [n[1] for n in batches[i]]
-					_, loss, acc = sess.run([optimizer, cost, accuracy], feed_dict={self.x: x, self.y: y, self.keep_prob: .5})
-					avg_loss += loss
-					avg_acc += acc
-					summary.value.add(tag='Accuracy', simple_value=(avg_acc / len(batches)))
-					summary.value.add(tag='Loss', simple_value=(avg_loss / len(batches)))
-				summary_writer.add_summary(summary, epoch)
-				if epoch % intervals == 0 and intervals != 0 and self.args.verbose:
-					main.log(self.args, '{:.5f}'.format(time.clock() - self.start_time) + 's ' + log + ' Epoch ' + str(epoch + 1) + ' Loss = {:.5f}'.format(avg_loss / len(batches)))
-			saver.save(sess, self.save_path + log + 'model') if self.save_path != '' else ''
-			batches = self.split_data(testing_data, batch_size)
-			avg_acc, labels, _y = 0, np.zeros(0), []
-			for batch in batches:
-				x, y = [m[0] for m in batch], [n[1] for n in batch]
-				_y += y
-				acc = accuracy.eval({self.x: x, self.y: y, self.keep_prob: 1.})
-				avg_acc += acc / len(batches)
-				prediction = tf.argmax(self.model, 1)
-				label = prediction.eval(feed_dict={self.x: x, self.y: y, self.keep_prob: 1.}, session=sess)
-				labels = np.append(labels, label)
-			main.log(self.args, self.args, '{:.5f}'.format(time.clock() - self.start_time) + 's ' + str(count) + ' trainable parameters')
-			if self.args.verbose:
-				pass
-				# self.confusion_matrix(labels, _y)
-			return avg_acc
-
-	"""
-	def cross_validation(self, data, k, epochs, log):
-		k_fold = KFold(n_splits=k)
-		i, acc, count = 0, 0, 0
-		_y, labels = [], []
-		for train_indices, test_indices in k_fold.split(data):
-			train, test = [], []
-			for i in train_indices:
-				train.append(data[i])
-			for i in test_indices:
-				test.append(data[i])
-			a, b, c, count = self.train(train, test, epochs, log + str(i))
-			acc += (a / k)
-			_y += b
-			labels += c
-			i += 1
-		main.log(self.args, str(self.start_time - time.clock()) + ' ' + str(count) + ' trainable parameters')
-		if self.args.verbose:
-			self.confusion_matrix(labels, _y)
-		return acc
-	"""
+			with tf.Session() as sess:
+				sess.run(init)
+				summary_writer = tf.summary.FileWriter(self.save_path + log, graph=tf.get_default_graph())
+				for epoch in range(epochs):
+					avg_loss, avg_acc = 0, 0
+					summary = tf.Summary()
+					for i in range(len(batches)):
+						x, y = [m[0] for m in batches[i]], [n[1] for n in batches[i]]
+						_, loss, acc = sess.run([optimizer, cost, accuracy], feed_dict={self.x: x, self.y: y, self.keep_prob: .5})
+						avg_loss += loss
+						avg_acc += acc
+						summary.value.add(tag='Accuracy', simple_value=(avg_acc / len(batches)))
+						summary.value.add(tag='Loss', simple_value=(avg_loss / len(batches)))
+					summary_writer.add_summary(summary, epoch)
+					if epoch % intervals == 0 and intervals != 0 and self.args.verbose:
+						main.log(self.args, '{:.5f}'.format(time.clock() - self.start_time) + 's ' + str(log) + ' Epoch ' + str(epoch + 1) + ' Loss = {:.5f}'.format(avg_loss / len(batches)))
+				saver.save(sess, self.save_path + log + 'model') if self.save_path != '' else ''
+				batches = self.split_data(testing_data, batch_size)
+				avg_acc, labels, _y = 0, np.zeros(0), []
+				for batch in batches:
+					x, y = [m[0] for m in batch], [n[1] for n in batch]
+					_y += y
+					acc = accuracy.eval({self.x: x, self.y: y, self.keep_prob: 1.})
+					avg_acc += acc / len(batches)
+					prediction = tf.argmax(self.model, 1)
+					label = prediction.eval(feed_dict={self.x: x, self.y: y, self.keep_prob: 1.}, session=sess)
+					labels = np.append(labels, label)
+				main.log(self.args, '{:.5f}'.format(time.clock() - self.start_time) + 's ' + str(count) + ' trainable parameters')
+				if self.args.verbose:
+					self.confusion_matrix(self.args, labels, _y)
+				return avg_acc
 
 	@staticmethod
 	def split_data(seq, num):
@@ -162,37 +142,48 @@ class Classifier:
 			total_parameters += variable_parametes
 		return total_parameters
 
-	def confusion_matrix(self, labels, y_pred):
-		y_actu = np.zeros((len(y_pred), len(y_pred[0])))
-		for i in range(len(y_pred)):
-			y_actu[i][int(labels[i])] = 1.0
+	@staticmethod
+	def confusion_matrix(args, y_pred, labels):
+		y_actu = np.zeros(len(y_pred))
+		for i in range(len(labels)):
+			for j in range(len(labels[i])):
+				if labels[i][j] == 1.00:
+					y_actu[i] = j
 
 		p_labels = pd.Series(y_pred)
 		t_labels = pd.Series(y_actu)
 		df_confusion = pd.crosstab(t_labels, p_labels, rownames=['Actual'], colnames=['Predicted'], margins=True)
 
-		main.log(self.args, df_confusion)
-		main.log(self.args, classification_report(y_actu, y_pred))
+		main.log(args, df_confusion)
+		main.log(args, classification_report(y_actu, y_pred))
 
 	def classify(self, data, log):
-		init, saver = tf.global_variables_initializer(), tf.train.Saver()
-		with tf.Session() as sess:
-			sess.run(init)
-			saver.restore(sess, self.save_path + log + 'model')
-			return np.asarray(sess.run(self.model, feed_dict={self.x: data, self.keep_prob: 1.}))
+		with tf.variable_scope(self.scope_name):
+			init, saver = self.init_scope(), tf.train.Saver()
+			with tf.Session() as sess:
+				sess.run(init)
+				saver.restore(sess, self.save_path + log + 'model')
+				return np.asarray(sess.run(self.model, feed_dict={self.x: data, self.keep_prob: 1.}))
 
 	def classify_batch(self, data, log):
-		batch_size = self.args.batch_size
-		init, saver = tf.global_variables_initializer(), tf.train.Saver()
-		batches = self.split_data(data, batch_size)
-		labels, _y = np.zeros(0), []
-		with tf.Session() as sess:
-			sess.run(init)
-			saver.restore(sess, self.save_path + log + 'model')
-			for batch in batches:
-				x, y = [m[0] for m in batch], [n[1] for n in batch]
-				_y += y
-				prediction = tf.argmax(self.model, 1)
-				label = prediction.eval(feed_dict={self.x: x, self.y: y, self.keep_prob: 1.}, session=sess)
-				labels = np.append(labels, label)
-			return _y, labels
+		with tf.variable_scope(self.scope_name):
+			batch_size = self.args.batch_size
+			init, saver = self.init_scope(), tf.train.Saver()
+			batches = self.split_data(data, batch_size)
+			labels, _y = np.zeros(0), []
+			with tf.Session() as sess:
+				sess.run(init)
+				saver.restore(sess, self.save_path + log + 'model')
+				for batch in batches:
+					x, y = [m[0] for m in batch], [n[1] for n in batch]
+					_y += y
+					prediction = tf.argmax(self.model, 1)
+					label = prediction.eval(feed_dict={self.x: x, self.y: y, self.keep_prob: 1.}, session=sess)
+					labels = np.append(labels, label)
+				return _y, labels
+
+	def init_scope(self):
+		varibles = []
+		for i in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=self.scope_name):
+			varibles.append(i)
+		return tf.variables_initializer(varibles)

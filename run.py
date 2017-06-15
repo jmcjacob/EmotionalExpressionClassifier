@@ -40,12 +40,12 @@ def run(args):
 	front = frontalization.Front(args)
 
 	classifiers = []
-	classifiers.append(Classifier(args, start_time, args.classes, args.resource_path, (150,150,3), colour=True, local=False))
-	classifiers.append(Classifier(args, start_time, args.classes, args.resource_path, (150, 150), colour=False, local=False))
-	classifiers.append(Classifier(args, start_time, args.classes, args.resource_path, (150,150,3), colour=True, local=False))
-	classifiers.append(Classifier(args, start_time, args.classes, args.resource_path, (150,150,3), colour=True, local=True))
-	classifiers.append(Classifier(args, start_time, args.classes, args.resource_path, (150, 150), colour=False, local=False))
-	classifiers.append(Classifier(args, start_time, args.classes, args.resource_path, (150, 150), colour=False, local=True))
+	classifiers.append(Classifier(args, start_time, args.classes, args.resource_dir, (150,150,3), colour=True, local=False))
+	classifiers.append(Classifier(args, start_time, args.classes, args.resource_dir, (150, 150), colour=False, local=False))
+	classifiers.append(Classifier(args, start_time, args.classes, args.resource_dir, (150,150,3), colour=True, local=False))
+	classifiers.append(Classifier(args, start_time, args.classes, args.resource_dir, (150,150,3), colour=True, local=True))
+	classifiers.append(Classifier(args, start_time, args.classes, args.resource_dir, (150, 150), colour=False, local=False))
+	classifiers.append(Classifier(args, start_time, args.classes, args.resource_dir, (150, 150), colour=False, local=True))
 
 	if video.grab():
 		while running:

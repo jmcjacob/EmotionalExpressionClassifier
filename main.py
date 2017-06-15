@@ -21,7 +21,7 @@ def parse_args():
 	parser.add_argument('--log', type=str, default='',
 						help='The file where files will be logged.')
 
-	parser.add_argument('--resource_path', type=str, default='/Resources',
+	parser.add_argument('--resource_dir', type=str, default='/Resources',
 						help='Directory where models will be saved to and necessary data will be stored.')
 
 	parser.add_argument('--model_name', type=str, default='model',
@@ -39,9 +39,6 @@ def parse_args():
 
 	parser.add_argument('--batch_size', type=int, default=32,
 						help='The sizes of the batches used within training. Training only.')
-
-	parser.add_argument('--k_fold', type=int, default=5,
-						help='The number of cross validation folds will be trained and testing. Training only.')
 
 	# Classification
 	parser.add_argument('--image', type=str,
@@ -72,13 +69,14 @@ def log(args, input_str, override=False):
 		print input_str
 	if args.log != '':
 		file = open(args.log, 'a')
-		file.write(input_str + '\n')
+		file.write(str(input_str) + '\n')
 		file.close()
 
 
 def main():
 	global args
 	args = parse_args()
+	log(args, '\n' + str(args))
 	if not args.dev:
 		if args.mode == 'train':
 			train.train(args)
