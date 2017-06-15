@@ -10,8 +10,6 @@ def parse_args():
 	parser = argparse.ArgumentParser(description=desc)
 
 	# General
-	parser.add_argument('--dev', action='store_true', default=False)
-
 	parser.add_argument('--mode', type=str,
 						help='Model for the system, \'train\', \'classify\', \'dataset\', \'run\'')
 
@@ -74,28 +72,23 @@ def log(args, input_str, override=False):
 
 
 def main():
-	global args
 	args = parse_args()
 	log(args, '\n' + str(args))
-	if not args.dev:
-		if args.mode == 'train':
-			train.train(args)
-		elif args.mode == 'classify':
-			classify(args)
-		elif args.mode == 'dataset':
-			build_dataset(args)
-		elif args.mode == 'run':
-			run_thread = run.MyThread(0, args)
-			network_thread = run.MyThread(1, args)
-			run_thread.start()
-			network_thread.start()
-			while network_thread.is_alive():
-				continue
-		else:
-			log(args, 'Please select a mode using the tag --mode, use --help for help.', True)
+	if args.mode == 'train':
+		train.train(args)
+	elif args.mode == 'classify':
+		classify(args)
+	elif args.mode == 'dataset':
+		build_dataset(args)
+	elif args.mode == 'run':
+		run_thread = run.MyThread(0, args)
+		network_thread = run.MyThread(1, args)
+		run_thread.start()
+		network_thread.start()
+		while network_thread.is_alive():
+			continue
 	else:
-		log(args, 'Dev mode...\n\nnothing happened')
-
+		log(args, 'Please select a mode using the tag --mode, use --help for help.', True)
 
 if __name__ == '__main__':
 	main()
