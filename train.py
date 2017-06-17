@@ -28,13 +28,13 @@ def train(args):
 	accuracy = lbp_classifier.train(train_data, test_data, args.epochs, (args.model_name + '/lbp/'))
 	main.log(args, '{:.5f}'.format(time.clock() - start_time) + 's ' + str(accuracy) + ' accuracy')
 
-	"""
+
 	main.log(args, '\n---------- RGB, Frontalization, Convolutional Layers ----------')
 	train_data = retrieve_data(args.training_dir + '/frgb')
 	test_data = retrieve_data(args.testing_dir + '/frgb')
 	main.log(args, '{:.5f}'.format(time.clock() - start_time) + 's ' + str(len(train_data)) + ' images read across ' + str(len(train_data[0][1])) + ' classes')
 
-	frgb_classifier = Classifier(args, start_time, len(train_data[0][1]), args.resource_dir, train_data[0][0].shape, 'frgb;, local=False)
+	frgb_classifier = Classifier(args, start_time, len(train_data[0][1]), args.resource_dir, train_data[0][0].shape, 'frgb', local=False)
 	accuracy = frgb_classifier.train(train_data, test_data, args.epochs, (args.model_name + '/frgb/'))
 	main.log(args, '{:.5f}'.format(time.clock() - start_time) + 's ' + str(accuracy) + ' accuracy')
 
@@ -60,7 +60,7 @@ def train(args):
 	main.log(args, '{:.5f}'.format(time.clock() - start_time) + 's ' + str(accuracy) + ' accuracy')
 
 	main.log(args, '\n Completed Training in ' + str(time.clock() - start_time) + 's\n')
-	"""
+
 	avg_accuracy(args, start_time)
 
 def retrieve_data(image_directory):
@@ -70,11 +70,14 @@ def retrieve_data(image_directory):
 		break
 	for folder in sorted(os.listdir(image_directory)):
 		for image_file in sorted(os.listdir(image_directory + '/' +  folder)):
-			labels = np.zeros(folder_counter)
-			labels[label] = 1
-			image_file = image_directory + '/' + folder + '/' + image_file
-			image = cv2.imread(image_file, cv2.IMREAD_COLOR)
-			data.append((cv2.resize(image, (150, 150)), labels))
+			try:
+				labels = np.zeros(folder_counter)
+				labels[label] = 1
+				image_file = image_directory + '/' + folder + '/' + image_file
+				image = cv2.imread(image_file, cv2.IMREAD_COLOR)
+				data.append((cv2.resize(image, (150, 150)), labels))
+			except:
+				pass
 		label += 1
 	return data
 
