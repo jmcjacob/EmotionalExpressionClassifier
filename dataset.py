@@ -19,7 +19,7 @@ def build_dataset(args):
 				for inner_folder in os.listdir(args.data_dir + '/' + outer_folder):
 					if os.path.isdir(args.data_dir + '/' + outer_folder + '/' + inner_folder):
 						for input_file in os.listdir(args.data_dir + '/' + outer_folder + '/' + inner_folder):
-							data_type = input_file.split('.')[1]
+							data_type = input_file.split('.')[1].lower()
 							if not(data_type == 'png' or data_type == 'jpg' or data_type == 'tiff'):
 								break
 							label_file = args.label_dir + '/' + outer_folder + '/' + inner_folder + '/' + input_file[:-4] + '_emotion.txt'
