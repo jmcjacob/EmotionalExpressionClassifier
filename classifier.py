@@ -42,8 +42,9 @@ class Classifier:
 		width = shape[2].value
 		patch_size = (kernel_size ** 2) * shape[3].value
 		patches = tf.extract_image_patches(previous_layer, [1, kernel_size, kernel_size, 1], strides, [1, 1, 1, 1], padding)
-		weights = tf.get_variable(weight_name, [1, height, width, patch_size, channels], initializer=tf.truncated_normal_initializer(stddev=5e-2, dtype=tf.float16))
-		biases = tf.get_variable(bias_name, [height, width, channels], initializer=tf.constant_initializer(0.1))
+		with tf.device('/cpu:0'):
+			weights = tf.get_variable(weight_name, [1, height, width, patch_size, channels], initializer=tf.truncated_normal_initializer(stddev=5e-2, dtype=tf.float16))
+			biases = tf.get_variable(bias_name, [height, width, channels], initializer=tf.constant_initializer(0.1))
 		mul = tf.multiply(tf.expand_dims(patches, axis=-1), weights)
 		ssum = tf.reduce_sum(mul, axis=3)
 		return tf.add(ssum, biases)
