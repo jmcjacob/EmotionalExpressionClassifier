@@ -49,19 +49,19 @@ def build_dataset(args):
 					if (data_type == 'png' or data_type == 'jpg' or data_type == 'tiff') and file[6] != 'F':
 						label = 0
 						if file[4:6] == 'AF':
-							label = 4
+							label = 3
 						elif file[4:6] == 'AN':
 							label = 1
 						elif file[4:6] == 'DI':
-							label = 3
+							label = 2
 						elif file[4:6] == 'HA':
-							label = 5
+							label = 4
 						elif file[4:6] == 'NE':
 							label = 0
 						elif file[4:6] == 'SA':
-							label = 6
+							label = 5
 						elif file[4:6] == 'SU':
-							label = 7
+							label = 6
 						image_files.append((args.data_dir + '/' + folder + '/' + file, label))
 		main.log(args, '{:.5f}'.format(time.clock() - start_time) + 's ' + str(len(image_files)) + ' Images File Collected')
 		extract_images(args, start_time, image_files)
