@@ -4,6 +4,7 @@ import dlib
 import main
 import time
 import random
+import shutil
 import numpy as np
 import frontalization
 from skimage import feature
@@ -67,6 +68,13 @@ def build_dataset(args):
 		extract_images(args, start_time, image_files)
 	else:
 		main.log(args, 'Please specify a dataset \'--dataset\'', True)
+	if args.split_dir != 'none':
+		splits = split_images(args)
+		main.log(args, '{:.5f}'.format(time.clock() - start_time) + 's ' + 'Images have been split ')
+	if args.normalize:
+		normalize(args)
+		if args.split_dir != 'none':
+			normalize(args, splits)
 
 
 def build_structure(args, start_time, classes):
@@ -133,6 +141,57 @@ def save_image(args, start_time, save, data, type):
 			except:
 				pass
 	main.log(args, str(time.clock() - start_time) + ' ' + type + ' Images Extracted')
+
+
+def split_images(args):
+	output_dirs = []
+	for i in [args.training_dir, args.testing_dir]:
+		for j in ['rgb/', 'lbp/', 'frgb/', 'flbp/']:
+			input_dir = i + '/' + j
+			output_dir = args.split_dir + '/' + i.split('/')[-1]
+			output_dirs.append(output_dir)
+			if not os.path.exists(output_dir):
+				os.makedirs(output_dir)
+				for m in range(3):
+					os.makedirs(output_dir + '/' + str(m))
+			shutil.copytree(input_dir + '/0', output_dir + '/0')
+			if args.dataset == 'CK+':
+				negative = [1, 3, 4, 6]
+				positive = [2, 5, 7]
+			elif args.dataset == 'KDEF':
+				negative = [1, 2, 3, 5]
+				positive = [4, 6]
+			for i in negative:
+				for image_file in os.listdir(input_dir + '/' + str(i)):
+					shutil.copy(input_dir + '/' + str(i) + '/' + image_file, output_dir + '/' + str(1) + '/' + image_file)
+			os.makedirs(output_dir + '/2')
+			for i in positive:
+				for image_file in os.listdir(input_dir + '/' + str(i)):
+					shutil.copy(input_dir + '/' + str(i) + '/' + image_file, output_dir + '/' + str(2) + '/' + image_file)
+	return output_dirs
+
+
+def normalize(args, dirs=[]):
+	if len(dirs) == 0:
+		for i in [args.training_dir, args.testing_dir]:
+			for j in ['rgb/', 'lbp/', 'frgb/', 'flbp/']:
+				dirs.append(i + '/' + j)
+	for dir in dirs:
+		minimum, num_files = 1000000, []
+		for folder in os.listdir(dir):
+			path = dir + '/' + folder
+			files = len([f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))])
+			num_files.append([files, path])
+			main.log(args, path + ' has ' + str(files) + ' files')
+			if files < minimum:
+				minimum = files
+		main.log(args, 'minimum = files')
+
+		for i in range(len(num_files)):
+			while num_files[i][0] > minimum:
+				os.remove(num_files[i][1] + '/' + random.choice(os.listdir(num_files[i][1])))
+				num_files[1][0] -= 1
+
 
 
 def noisy(noise_typ,image):
