@@ -56,10 +56,10 @@ def parse_args():
 						help='The dataset that is being processed. Dataset Building only.')
 
 	parser.add_argument('--split_dir', type=str, default='none',
-	                    help='The directory path to the split dataset. Dataset Building only.')
+						help='The directory path to the split dataset. Dataset Building only.')
 
 	parser.add_argument('--normalize', action='store_true', default=False,
-	                    help='Should the dataset be normalized once completed. Dataset Building only.')
+						help='Should the dataset be normalized once completed. Dataset Building only.')
 
 	# Run Parameters
 	parser.add_argument('--address', type=str,

@@ -146,13 +146,16 @@ def save_image(args, start_time, save, data, type):
 def split_images(args):
 	output_dirs = []
 	for i in [args.training_dir, args.testing_dir]:
-		for j in ['rgb/', 'lbp/', 'frgb/', 'flbp/']:
-			input_dir = i + '/' + j
-			output_dir = args.split_dir + '/' + i.split('/')[-1]
+		for j in ['rgb', 'lbp', 'frgb', 'flbp']:
+			input_dir = str(i) + '/' + str(j)
+			print input_dir
+			output_dir = args.split_dir + '/' + i.split('/')[-1] + '/' + j
+			print output_dir
 			output_dirs.append(output_dir)
 			if not os.path.exists(output_dir):
 				os.makedirs(output_dir)
-				for m in range(3):
+				for m in range(1, 3):
+					print output_dir + '/' + str(m)
 					os.makedirs(output_dir + '/' + str(m))
 			shutil.copytree(input_dir + '/0', output_dir + '/0')
 			if args.dataset == 'CK+':
@@ -161,13 +164,12 @@ def split_images(args):
 			elif args.dataset == 'KDEF':
 				negative = [1, 2, 3, 5]
 				positive = [4, 6]
-			for i in negative:
-				for image_file in os.listdir(input_dir + '/' + str(i)):
-					shutil.copy(input_dir + '/' + str(i) + '/' + image_file, output_dir + '/' + str(1) + '/' + image_file)
-			os.makedirs(output_dir + '/2')
-			for i in positive:
-				for image_file in os.listdir(input_dir + '/' + str(i)):
-					shutil.copy(input_dir + '/' + str(i) + '/' + image_file, output_dir + '/' + str(2) + '/' + image_file)
+			for n in negative:
+				for image_file in os.listdir(input_dir + '/' + str(n)):
+					shutil.copy(input_dir + '/' + str(n) + '/' + image_file, output_dir + '/' + str(1) + '/' + image_file)
+			for n in positive:
+				for image_file in os.listdir(input_dir + '/' + str(n)):
+					shutil.copy(input_dir + '/' + str(n) + '/' + image_file, output_dir + '/' + str(2) + '/' + image_file)
 	return output_dirs
 
 
