@@ -1,8 +1,9 @@
-import train
-import argparse
 import run
+import time
+import train
+import dataset
+import argparse
 from classify import classify
-from dataset import build_dataset
 
 
 def parse_args():
@@ -11,7 +12,7 @@ def parse_args():
 
 	# General
 	parser.add_argument('--mode', type=str,
-						help='Model for the system, \'train\', \'classify\', \'dataset\', \'run\'')
+						help='Model for the system, \'train\', \'classify\', \'dataset\', \'run\', \'normalize\'')
 
 	parser.add_argument('--verbose', action='store_true', default=True,
 						help='Boolean flag indicating if statements should be printed to console.')
@@ -85,7 +86,7 @@ def main():
 	elif args.mode == 'classify':
 		classify(args)
 	elif args.mode == 'dataset':
-		build_dataset(args)
+		dataset.build_dataset(args)
 	elif args.mode == 'run':
 		run_thread = run.MyThread(0, args)
 		network_thread = run.MyThread(1, args)
@@ -93,6 +94,15 @@ def main():
 		network_thread.start()
 		while network_thread.is_alive():
 			continue
+	elif args.mode == 'normalize':
+		start_time = time.clock()
+		if args.split_dir != 'none':
+			splits = dataset.split_images(args, start_time)
+			log(args, '{:.5f}'.format(time.clock() - start_time) + 's ' + 'Images have been split ')
+		if args.normalize:
+			dataset.normalize(args, start_time)
+			if args.split_dir != 'none':
+				dataset.normalize(args, start_time, dirs=splits)
 	else:
 		log(args, 'Please select a mode using the tag --mode, use --help for help.', True)
 
