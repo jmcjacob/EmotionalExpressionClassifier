@@ -1,8 +1,10 @@
 import main
 import time
+import tflearn
 import numpy as np
 import pandas as pd
 import tensorflow as tf
+from keras.layers.local import LocallyConnected2D
 from sklearn.metrics import classification_report
 
 
@@ -23,17 +25,18 @@ class Classifier:
 			model = tf.reshape(self.x, shape=[-1, input_shape[0], input_shape[1], input_shape[2]])
 			model = tf.pad(model, [[0, 0], [3, 3], [3, 3], [0, 0]], 'CONSTANT')
 			if local:
-				model = tf.nn.relu(self.local_layer(model, 7, 64, [1, 1, 1, 1], 'SAME', 'Local_w', 'Local_b'))
+				#model = tf.nn.relu(self.local_layer(model, 7, 64, [1, 1, 1, 1], 'SAME', 'Local_w', 'Local_b'))
+				local = LocallyConnected2D(64, 7, (3, 3), 'valid', activation='relu', kernel_initializer='random_normal', bias_initializer='random_normal')
+				local.build(model.get_shape())
+				model = local.call(model)
 			else:
 				model = tf.nn.conv2d(model, tf.Variable(tf.random_normal([7, 7, input_shape[2], 64])), [1, 3, 3, 1], 'VALID')
 				model = tf.nn.relu(tf.nn.bias_add(model, tf.Variable(tf.random_normal([64]))))
 			model = tf.nn.max_pool(model, [1, 3, 3, 1], [1, 2, 2, 1], 'VALID')
-			model = tf.nn.lrn(model)
+			model = tflearn.batch_normalization(model)
 			model = self.featex(self.featex(model))
-			shape = model.get_shape().as_list()
-			shape = shape[1] * shape[2] * shape[3]
-			model = tf.reshape(model, (-1, shape))
-			return tf.matmul(model, tf.Variable(tf.random_normal([shape, num_classes])))
+			model = tflearn.flatten(model)
+			return tf.matmul(model, tf.Variable(tf.random_normal([model.get_shape().as_list()[1], num_classes])))
 
 	@staticmethod
 	def local_layer(previous_layer, kernel_size, channels, strides, padding, weight_name, bias_name):
@@ -70,7 +73,7 @@ class Classifier:
 		path2 = tf.nn.max_pool(path2, [1, 3, 3, 1], [1, 1, 1, 1], 'VALID')
 		path2 = tf.nn.relu(tf.nn.bias_add(tf.nn.conv2d(path2, weights['wcc'], [1, 1, 1, 1], 'VALID'), biases['bcc']))
 
-		output = tf.concat(3, [path1, path2])
+		output = tflearn.merge([path1, path2], mode='concat', axis=3)
 		return tf.nn.max_pool(output, [1, 3, 3, 1], [1, 2, 2, 1], 'VALID')
 
 	def train(self, training_data, testing_data, epochs, log, intervals=1):
@@ -78,7 +81,7 @@ class Classifier:
 			batch_size = self.args.batch_size
 			batches = self.split_data(training_data, batch_size)
 			cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(self.model, self.y))
-			optimizer = tf.train.AdamOptimizer().minimize(cost)
+			optimizer = tf.train.AdamOptimizer(learning_rate=0.0001).minimize(cost)
 			correct_prediction = tf.equal(tf.argmax(self.model, 1), tf.argmax(self.y, 1))
 			accuracy = tf.reduce_mean(tf.cast(correct_prediction, 'float'))
 

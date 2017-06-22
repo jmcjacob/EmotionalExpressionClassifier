@@ -33,10 +33,10 @@ def parse_args():
 	parser.add_argument('--testing_dir', type=str, default='/Testing_data',
 						help='Directory of labeled images for testing. Training and Dataset Building only.')
 
-	parser.add_argument('--epochs', type=int, default=1000,
+	parser.add_argument('--epochs', type=int, default=100,
 						help='The number of epochs each model will be trained for. Training only.')
 
-	parser.add_argument('--batch_size', type=int, default=32,
+	parser.add_argument('--batch_size', type=int, default=350,
 						help='The sizes of the batches used within training. Training only.')
 
 	# Classification
