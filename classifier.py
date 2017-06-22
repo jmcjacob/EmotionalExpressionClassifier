@@ -80,7 +80,7 @@ class Classifier:
 		with tf.variable_scope(self.scope_name):
 			batch_size = self.args.batch_size
 			batches = self.split_data(training_data, batch_size)
-			cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(self.model, self.y))
+			cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=self.model, labels=self.y))
 			optimizer = tf.train.AdamOptimizer(learning_rate=0.0001).minimize(cost)
 			correct_prediction = tf.equal(tf.argmax(self.model, 1), tf.argmax(self.y, 1))
 			accuracy = tf.reduce_mean(tf.cast(correct_prediction, 'float'))
