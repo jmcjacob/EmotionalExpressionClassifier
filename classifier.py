@@ -26,7 +26,7 @@ class Classifier:
 			model = tf.pad(model, [[0, 0], [3, 3], [3, 3], [0, 0]], 'CONSTANT')
 			if local:
 				#model = tf.nn.relu(self.local_layer(model, 7, 64, [1, 1, 1, 1], 'SAME', 'Local_w', 'Local_b'))
-				local = LocallyConnected2D(64, 7, (3, 3), 'valid', activation='relu', kernel_initializer='random_normal', bias_initializer='random_normal')
+				local = LocallyConnected2D(64, 7, (3, 3), padding='valid', activation='relu', kernel_initializer='random_normal', bias_initializer='random_normal')
 				local.build(model.get_shape())
 				model = local.call(model)
 			else:
