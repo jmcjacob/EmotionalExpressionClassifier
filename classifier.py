@@ -93,7 +93,11 @@ class Classifier:
 			with tf.Session() as sess:
 				sess.run(init)
 				summary_writer = tf.summary.FileWriter(self.save_path + log, graph=tf.get_default_graph())
-				for epoch in range(epochs):
+				epoch = 0
+				pre_loss = 0.0
+				#for epoch in range(epochs):
+				while True:
+					epoch += 1
 					avg_loss, avg_acc = 0, 0
 					summary = tf.Summary()
 					for i in range(len(batches)):
@@ -105,7 +109,10 @@ class Classifier:
 						summary.value.add(tag='Loss', simple_value=(avg_loss / len(batches)))
 					summary_writer.add_summary(summary, epoch)
 					if epoch % intervals == 0 and intervals != 0 and self.args.verbose:
-						main.log(self.args, '{:.5f}'.format(time.clock() - self.start_time) + 's ' + str(log) + ' Epoch ' + str(epoch + 1) + ' Loss = {:.5f}'.format(avg_loss / len(batches)))
+						main.log(self.args, '{:.5f}'.format(time.clock() - self.start_time) + 's ' + str(log) + ' Epoch ' + str(epoch + 1) + ' Loss = {:.5f}'.format(avg_loss / len(batches)) + ' Previous Loss = {:.5f}'.format(pre_loss))
+					if avg_loss / len(batches) == pre_loss:
+						break
+					pre_loss = avg_loss / len(batches)
 				saver.save(sess, self.save_path + log + 'model') if self.save_path != '' else ''
 				batches = self.split_data(testing_data, batch_size)
 				avg_acc, labels, _y = 0, np.zeros(0), []
