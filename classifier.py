@@ -25,9 +25,10 @@ class Classifier:
 			model = tf.reshape(self.x, shape=[-1, input_shape[0], input_shape[1], input_shape[2]])
 			model = tf.pad(model, [[0, 0], [3, 3], [3, 3], [0, 0]], 'CONSTANT')
 			if local:
-				#model = tf.nn.relu(self.local_layer(model, 7, 64, [1, 1, 1, 1], 'SAME', 'Local_w', 'Local_b'))
-				local = LocallyConnected2D(64, 7, (3, 3), padding='valid', activation='relu', kernel_initializer='random_normal', bias_initializer='random_normal')
-				local.build(model.get_shape())
+				# model = tf.nn.relu(self.local_layer(model, 7, 64, [1, 1, 1, 1], 'SAME', 'Local_w', 'Local_b'))
+				# local = LocallyConnected2D(64, 7, (3, 3), padding='valid', activation='relu', kernel_initializer='random_normal', bias_initializer='random_normal')
+				local = LocallyConnected2D(64, 7, strides=(3, 3), activation='relu', use_bias=True, kernel_initializer='random_normal', bias_initializer='random_normal')
+				local.build(model.get_shape().as_list())
 				model = local.call(model)
 			else:
 				model = tf.nn.conv2d(model, tf.Variable(tf.random_normal([7, 7, input_shape[2], 64])), [1, 3, 3, 1], 'VALID')
