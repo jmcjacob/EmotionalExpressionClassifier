@@ -2,9 +2,56 @@ import os
 import cv2
 import main
 import time
+import tflearn
 import numpy as np
 import tensorflow as tf
 from classifier import Classifier
+
+
+def train_2(args):
+
+	# Load data
+	data = retrieve_data(args.training_dir + '/rgb')
+	data += retrieve_data(args.testing_dir + '/rgb')
+	x, y = [m[0] for m in data], [n[1] for n in data]
+
+	# Define number of output classes.
+	num_classes = 7
+
+	# Define padding scheme.
+	padding = 'VALID'
+
+	# Model Architecture
+	network = tflearn.input_data(shape=[None, 224, 224, 1])
+	conv_1 = tflearn.relu(tflearn.conv_2d(network, 64, 7, strides=2, bias=True, padding=padding, activation=None, name='Conv2d_1'))
+	maxpool_1 = tflearn.batch_normalization(tflearn.max_pool_2d(conv_1, 3, strides=2, padding=padding, name='MaxPool_1'))
+
+	# FeatEX-1
+	conv_2a = tflearn.relu(tflearn.conv_2d(maxpool_1, 96, 1, strides=1, padding=padding, name='Conv_2a_FX1'))
+	maxpool_2a = tflearn.max_pool_2d(maxpool_1, 3, strides=1, padding=padding, name='MaxPool_2a_FX1')
+	conv_2b = tflearn.relu(tflearn.conv_2d(conv_2a, 208, 3, strides=1, padding=padding, name='Conv_2b_FX1'))
+	conv_2c = tflearn.relu(tflearn.conv_2d(maxpool_2a, 64, 1, strides=1, padding=padding, name='Conv_2c_FX1'))
+	FX1_out = tflearn.merge([conv_2b, conv_2c], mode='concat', axis=3, name='FX1_out')
+	# FeatEX-2
+	conv_3a = tflearn.relu(tflearn.conv_2d(FX1_out, 96, 1, strides=1, padding=padding, name='Conv_3a_FX2'))
+	maxpool_3a = tflearn.max_pool_2d(FX1_out, 3, strides=1, padding=padding, name='MaxPool_3a_FX2')
+	conv_3b = tflearn.relu(tflearn.conv_2d(conv_3a, 208, 3, strides=1, padding=padding, name='Conv_3b_FX2'))
+	conv_3c = tflearn.relu(tflearn.conv_2d(maxpool_3a, 64, 1, strides=1, padding=padding, name='Conv_3c_FX2'))
+	FX2_out = tflearn.merge([conv_3b, conv_3c], mode='concat', axis=3, name='FX2_out')
+	net = tflearn.flatten(FX2_out)
+	loss = tflearn.fully_connected(net, num_classes, activation='softmax')
+
+	# Compile the model and define the hyperparameters
+	network = tflearn.regression(loss, optimizer='Adam',loss='categorical_crossentropy',learning_rate=0.0001)
+
+	# Final definition of model checkpoints and other configurations
+	model = tflearn.DNN(network, checkpoint_path=args.resource_dir + args.model_name,max_checkpoints=1, tensorboard_verbose=2, tensorboard_dir=args.log)
+
+	# Fit the model, train for 20 epochs. (Change all parameters to flags (arguments) on version 2.)
+	model.fit(x, y, n_epoch=20, validation_set=0.1, shuffle=True, show_metric=True, batch_size=350, snapshot_step=2000, snapshot_epoch=True, run_id=args.model_name)
+
+	# Save the model
+	model.save(args.resource_dir + args.model_name + 'thing.model')
 
 
 def train(args):

@@ -82,7 +82,7 @@ def main():
 	args = parse_args()
 	log(args, '\n' + str(args))
 	if args.mode == 'train':
-		train.train(args)
+		train.train_2(args)
 	elif args.mode == 'classify':
 		classify(args)
 	elif args.mode == 'dataset':
