@@ -60,7 +60,8 @@ class Classifier:
 		conv_3c = tflearn.relu(tflearn.conv_2d(maxpool_3a, 64, 1, strides=1, padding='VALID', name='Conv_3c_FX2'))
 		FX2_out = tflearn.merge([conv_3b, conv_3c], mode='concat', axis=3, name='FX2_out')
 		net = tflearn.flatten(FX2_out)
-		return tflearn.fully_connected(net, num_classes, activation='softmax')
+		output = tflearn.fully_connected(net, num_classes, activation='softmax')
+		return tflearn.regression(output, optimizer='Adam', loss='categorical_crossentropy', learning_rate=0.0001)
 
 	def train(self, training_data, testing_data):
 		x, y = [m[0] for m in training_data], [n[1] for n in training_data]
