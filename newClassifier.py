@@ -22,7 +22,7 @@ class MonitorCallback(Callback):
 
 	def on_train_end(self, state):
 		main.log(self.args, '\n{:.5f}s'.format(time.clock() - self.start) + ' Validation Loss = {:.5f}'.format(state.global_loss) +
-				 ' Validation Accuracy = {:.5f}'.format(state.global_acc))
+				 ' Validation Accuracy = ' + str(state.global_acc))
 
 
 class Classifier:
