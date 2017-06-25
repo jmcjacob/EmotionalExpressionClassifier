@@ -18,7 +18,7 @@ class MonitorCallback(Callback):
 
 	def on_epoch_end(self, state):
 		main.log(self.args, '{:.5f}s Epoch '.format(time.clock() - self.start) + str(state.epoch).zfill(4) +
-				 ' Loss = {:.5f}'.format(state.global_loss) + ' Accuracy = {:.5}'.format(state.global_acc))
+				 ' Loss = {:.5f}'.format(state.global_loss) + ' Accuracy = {:.5}'.format(state.acc_value))
 
 	def on_train_end(self, state):
 		main.log(self.args, '\n{:.5f}s'.format(time.clock() - self.start) + ' Validation Loss = {:.5f}'.format(state.val_loss) +
