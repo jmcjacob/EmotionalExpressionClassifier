@@ -21,8 +21,8 @@ class MonitorCallback(Callback):
 				 ' Loss = {:.5f}'.format(state.global_loss) + ' Accuracy = {:.5}'.format(state.global_acc))
 
 	def on_train_end(self, state):
-		main.log(self.args, '\n{:.5f}s'.format(time.clock() - self.start) + ' Validation Loss = {:.5f}'.format(state.global_loss) +
-				 ' Validation Accuracy = ' + str(state.global_acc))
+		main.log(self.args, '\n{:.5f}s'.format(time.clock() - self.start) + ' Validation Loss = {:.5f}'.format(state.val_loss) +
+				 ' Validation Accuracy = ' + str(state.val_acc))
 
 
 class Classifier:
@@ -45,7 +45,7 @@ class Classifier:
 			local.build(network.get_shape().as_list())
 			conv_1 = local.call(network)
 		else:
-			conv_1 = tflearn.relu(tflearn.conv_2d(network, 64, 7, strides=2, bias=True, padding='VALID', activation=None, name='Conv2d_1'))
+			conv_1 = tflearn.relu(tflearn.conv_2d(network, 64, 7, strides=2, bias=True, padding='VALID', name='Conv2d_1'))
 		maxpool_1 = tflearn.batch_normalization(tflearn.max_pool_2d(conv_1, 3, strides=2, padding='VALID', name='MaxPool_1'))
 
 		conv_2a = tflearn.relu(tflearn.conv_2d(maxpool_1, 96, 1, strides=1, padding='VALID', name='Conv_2a_FX1'))
@@ -92,12 +92,15 @@ class Classifier:
 		return total_parameters
 
 	@staticmethod
-	def confusion_matrix(args, y_pred, labels):
-		y_actu = np.zeros(len(y_pred))
+	def confusion_matrix(args, predictions, labels):
+		y_actu = np.zeros(len(labels))
 		for i in range(len(labels)):
 			for j in range(len(labels[i])):
 				if labels[i][j] == 1.00:
 					y_actu[i] = j
+		y_pred = np.zeros(len(predictions))
+		for i in range(len(predictions)):
+			y_pred[i] = np.argmax(predictions[i])
 
 		p_labels = pd.Series(y_pred)
 		t_labels = pd.Series(y_actu)
