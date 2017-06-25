@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 from tflearn.callbacks import Callback
+from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
 from keras.layers.local import LocallyConnected2D
 
@@ -18,7 +19,7 @@ class MonitorCallback(Callback):
 
 	def on_epoch_end(self, state):
 		main.log(self.args, '{:.5f}s Epoch '.format(time.clock() - self.start) + str(state.epoch).zfill(4) +
-				 ' Loss = {:.5f}'.format(state.global_loss) + ' Accuracy = {:.5}'.format(state.global_acc))
+				 ' Loss = {:.5f}'.format(state.global_loss) + ' Accuracy = {:.5}'.format(state.acc_value))
 
 	def on_train_end(self, state):
 		main.log(self.args, '\n{:.5f}s'.format(time.clock() - self.start) + ' Validation Loss = {:.5f}'.format(state.val_loss) +
@@ -105,6 +106,7 @@ class Classifier:
 		p_labels = pd.Series(y_pred)
 		t_labels = pd.Series(y_actu)
 		df_confusion = pd.crosstab(t_labels, p_labels, rownames=['Actual'], colnames=['Predicted'], margins=True)
-
+		main.log(args, '\nAccuracy = ' + str(accuracy_score(y_true=y_actu, y_pred=y_pred, normalize=True)) + '\n')
 		main.log(args, df_confusion)
+		main.log(args, ' ')
 		main.log(args, classification_report(y_actu, y_pred))
