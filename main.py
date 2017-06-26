@@ -12,7 +12,7 @@ def parse_args():
 
 	# General
 	parser.add_argument('--mode', type=str,
-						help='Model for the system, \'train\', \'classify\', \'dataset\', \'run\', \'normalize\'')
+						help='Model for the system, \'train\', \'classify\', \'dataset\', \'run\', \'normalize\', \'evaluate\'')
 
 	parser.add_argument('--verbose', action='store_true', default=True,
 						help='Boolean flag indicating if statements should be printed to console.')
@@ -36,7 +36,7 @@ def parse_args():
 	parser.add_argument('--epochs', type=int, default=100,
 						help='The number of epochs each model will be trained for. Training only.')
 
-	parser.add_argument('--batch_size', type=int, default=350,
+	parser.add_argument('--batch_size', type=int, default=1,
 						help='The sizes of the batches used within training. Training only.')
 
 	# Classification
@@ -83,6 +83,8 @@ def main():
 	log(args, '\n' + str(args))
 	if args.mode == 'train':
 		train.train_2(args)
+	elif args.mode == 'evaluate':
+		train.avg_accuracy_2(args, time.clock())
 	elif args.mode == 'classify':
 		classify(args)
 	elif args.mode == 'dataset':

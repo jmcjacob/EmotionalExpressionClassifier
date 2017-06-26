@@ -53,6 +53,7 @@ def train_2(args):
 
 	avg_accuracy_2(args, start_time)
 
+
 def train(args):
 	start_time = time.clock()
 	main.log(args, '\n---------- RGB, No Frontalization, Convolutional Layers ----------')
@@ -109,6 +110,7 @@ def train(args):
 
 	avg_accuracy(args, start_time)
 
+
 def retrieve_data(image_directory):
 	data, label = [], 0
 	for _, dirs, _ in os.walk(image_directory):
@@ -154,6 +156,7 @@ def avg_accuracy(args, start_time):
 
 	Classifier.confusion_matrix(args, prediction, labels)
 
+
 def avg_accuracy_2(args, start_time):
 	rgb, lbp = retrieve_data(args.testing_dir + '/rgb'), retrieve_data(args.testing_dir + '/lbp')
 	frgb, flbp = retrieve_data(args.testing_dir + '/frgb'), retrieve_data(args.testing_dir + '/flbp')
@@ -178,4 +181,4 @@ def avg_accuracy_2(args, start_time):
 	for i in range(len(votes)):
 		prediction.append(np.argmax(votes[i]))
 
-	newClassifier.confusion_matrix(args, prediction, labels)
+	newClassifier.confusion_matrix(args, votes, labels)
