@@ -69,7 +69,7 @@ class Classifier:
 		monitor = MonitorCallback(self.args, self.start_time)
 		self.model.fit(x, y, n_epoch=self.args.epochs, validation_set=0.1, shuffle=True, show_metric=True, batch_size=self.args.batch_size, snapshot_step=2000, snapshot_epoch=True,
 					   run_id=self.args.model_name, callbacks=monitor)
-		main.log(self.args, '{:.5f}s Epoch '.format(time.clock() - self.start_time) + str(self.count_trainable_vars()) + ' trainable parameters')
+		main.log(self.args, '{:.5f}s '.format(time.clock() - self.start_time) + str(self.count_trainable_vars()) + ' trainable parameters')
 		self.model.save(self.save_path + 'model.model')
 		predictions, labels = self.evaluate(testing_data)
 		self.confusion_matrix(self.args, predictions, labels)

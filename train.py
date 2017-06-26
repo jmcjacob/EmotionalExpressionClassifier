@@ -159,19 +159,19 @@ def avg_accuracy_2(args, start_time):
 	frgb, flbp = retrieve_data(args.testing_dir + '/frgb'), retrieve_data(args.testing_dir + '/flbp')
 	labels, predictions = np.zeros(0), []
 
-	results = newClassifier(args, start_time, len(rgb[0][1]), args.resource_dir, rgb[0][0].shape, '/rgb/', local=False).classify(rgb)
+	results = newClassifier(args, start_time, len(rgb[0][1]), args.resource_dir, rgb[0][0].shape, '/rgb/', local=False).evaluate(rgb)
 	predictions.append(results[1])
 	labels = results[0]
-	predictions.append(newClassifier(args, start_time, len(rgb[0][1]), args.resource_dir, rgb[0][0].shape, '/lbp/', local=False).classify(lbp)[1])
-	predictions.append(newClassifier(args, start_time, len(rgb[0][1]), args.resource_dir, rgb[0][0].shape, '/frgb/', local=False).classify(frgb)[1])
-	predictions.append(newClassifier(args, start_time, len(rgb[0][1]), args.resource_dir, rgb[0][0].shape, '/lfrgb/', local=True).classify(frgb)[1])
-	predictions.append(newClassifier(args, start_time, len(rgb[0][1]), args.resource_dir, rgb[0][0].shape, '/flbp/', local=False).classify(flbp)[1])
-	predictions.append(newClassifier(args, start_time, len(rgb[0][1]), args.resource_dir, rgb[0][0].shape, '/lflbp/', local=True).classify(flbp)[1])
+	predictions.append(newClassifier(args, start_time, len(rgb[0][1]), args.resource_dir, rgb[0][0].shape, '/lbp/', local=False).evaluate(lbp)[1])
+	predictions.append(newClassifier(args, start_time, len(rgb[0][1]), args.resource_dir, rgb[0][0].shape, '/frgb/', local=False).evaluate(frgb)[1])
+	predictions.append(newClassifier(args, start_time, len(rgb[0][1]), args.resource_dir, rgb[0][0].shape, '/lfrgb/', local=True).evaluate(frgb)[1])
+	predictions.append(newClassifier(args, start_time, len(rgb[0][1]), args.resource_dir, rgb[0][0].shape, '/flbp/', local=False).evaluate(flbp)[1])
+	predictions.append(newClassifier(args, start_time, len(rgb[0][1]), args.resource_dir, rgb[0][0].shape, '/lflbp/', local=True).evaluate(flbp)[1])
 
 	votes = np.zeros((len(predictions[0]), len(labels[0])))
-	for i in range(len(predictions)):
-		for j in range(len(predictions[0])):
-			vote = predictions[i][j]
+	for i in range(len(predictions)): # For each Classifier
+		for j in range(len(predictions[0])): # For each image
+			vote = np.argmax(predictions[i][j])
 			votes[j][int(vote)] += 1.0
 
 	prediction = []
