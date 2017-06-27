@@ -4,7 +4,7 @@ import main
 import time
 import numpy as np
 from classifier import Classifier
-from newClassifier import Classifier as newClassifier
+from classifier import Classifier as newClassifier
 
 
 def train_2(args):

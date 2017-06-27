@@ -1,8 +1,8 @@
 import run
 import time
-import train
 import dataset
 import argparse
+import comparision
 from classify import classify
 
 
@@ -82,9 +82,7 @@ def main():
 	args = parse_args()
 	log(args, '\n' + str(args))
 	if args.mode == 'train':
-		train.train_2(args)
-	elif args.mode == 'evaluate':
-		train.avg_accuracy_2(args, time.clock())
+		comparision.train(args)
 	elif args.mode == 'classify':
 		classify(args)
 	elif args.mode == 'dataset':
