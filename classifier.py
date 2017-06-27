@@ -58,6 +58,15 @@ class Classifier:
 			full_1 = tflearn.dropout(tflearn.relu(tflearn.fully_connected(flatterned, 4096, name='Fully_Connected_1')), 0.5)
 			output = tflearn.fully_connected(full_1, num_classes, activation='softmax', name='Output')
 
+		elif model == 'Song':
+			conv_1 = tflearn.conv_2d(network, 64, 5, strides=1, padding='VALID', name='Conv_1')
+			maxpool_1 = tflearn.max_pool_2d(conv_1, 3, strides=2, padding='VALID', name='MaxPool_1')
+			conv_2 = tflearn.conv_2d(maxpool_1, 64 , 5, strides=1, padding='VALID', name='Conv_2')
+			maxpool_2 = tflearn.max_pool_2d(conv_2, 3, strides=2, padding='VALID', name='MaxPool_2')
+			local_1 = tflearn.dropout(self.local(maxpool_2, 32, 3, 1, 'Local_1'), 0.5)
+			local_2 = tflearn.dropout(self.local(local_1, 32, 3, 1, 'Local_2'), 0.5)
+			output = tflearn.fully_connected(tflearn.flatten(local_2), num_classes, activation='softmax', name='Output')
+
 		else:
 			conv_1 = tflearn.relu(tflearn.conv_2d(network, 64, 7, strides=2, bias=True, padding='VALID', name='Conv2d_1'))
 			maxpool_1 = tflearn.batch_normalization(tflearn.max_pool_2d(conv_1, 3, strides=2, padding='VALID', name='MaxPool_1'))

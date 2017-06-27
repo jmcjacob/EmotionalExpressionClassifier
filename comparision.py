@@ -27,6 +27,14 @@ def train(args):
 	Deepfront = Classifier(args, start_time, len(front_data[0][0][1]), args.resource_dir, front_data[0][0][0].shape, '/Deepfront/', 'DeepFace')
 	Deepfront.train(front_data[0], front_data[1])
 
+	main.log(args, '\n---------- Song, No Frontalization ----------')
+	Songrgb = Classifier(args, start_time, len(rgb_data[0][0][1]), args.resource_dir, rgb_data[0][0][0].shape, '/Songrgb/', 'Song')
+	Songrgb.train(rgb_data[0], rgb_data[1])
+
+	main.log(args, '\n---------- Song, Frontalization ----------')
+	Songfront = Classifier(args, start_time, len(front_data[0][0][1]), args.resource_dir, front_data[0][0][0].shape, '/Songfront/', 'Song')
+	Songfront.train(front_data[0], front_data[1])
+
 	main.log(args, '\n Completed Comparison in ' + str(time.clock() - start_time) + 's\n')
 
 
