@@ -101,8 +101,10 @@ class Classifier:
 		return self.model.predict(data)
 
 	def evaluate(self, testing_data):
-		x, y = [m[0] for m in testing_data], [n[1] for n in testing_data]
-		return self.model.predict(x), y
+		predictions = []
+		for data in testing_data:
+			predictions += (self.model.predict(data[0]), data[1])
+		return predictions
 
 	@staticmethod
 	def count_trainable_vars():
@@ -133,3 +135,17 @@ class Classifier:
 		main.log(args, df_confusion)
 		main.log(args, ' ')
 		main.log(args, classification_report(y_actu, y_pred))
+
+	@staticmethod
+	def split_data(seq, num):
+		count, out = -1, []
+		while count < len(seq):
+			temp = []
+			for i in range(num):
+				count += 1
+				if count >= len(seq):
+					break
+				temp.append(seq[count])
+			if len(temp) != 0:
+				out.append(temp)
+		return out
