@@ -104,7 +104,7 @@ class Classifier:
 		predictions = []
 		for data in testing_data:
 			predictions += (self.model.predict(data[0]), data[1])
-		return predictions
+		return [m[0] for m in predictions], [n[1] for n in predictions]
 
 	@staticmethod
 	def count_trainable_vars():
