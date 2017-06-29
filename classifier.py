@@ -59,13 +59,15 @@ class Classifier:
 			output = tflearn.fully_connected(full_1, num_classes, activation='softmax', name='Output')
 
 		elif model == 'Song':
-			conv_1 = tflearn.conv_2d(network, 64, 5, strides=1, padding='VALID', name='Conv_1')
+			conv_1 = tflearn.relu(tflearn.conv_2d(network, 64, 5, strides=1, padding='VALID', name='Conv_1'))
 			maxpool_1 = tflearn.max_pool_2d(conv_1, 3, strides=2, padding='VALID', name='MaxPool_1')
-			conv_2 = tflearn.conv_2d(maxpool_1, 64 , 5, strides=1, padding='VALID', name='Conv_2')
+			conv_2 = tflearn.relu(tflearn.conv_2d(maxpool_1, 64 , 5, strides=1, padding='VALID', name='Conv_2'))
 			maxpool_2 = tflearn.max_pool_2d(conv_2, 3, strides=2, padding='VALID', name='MaxPool_2')
-			local_1 = tflearn.dropout(self.local(maxpool_2, 32, 3, 1, 'Local_1'), 0.5)
-			local_2 = tflearn.dropout(self.local(local_1, 32, 3, 1, 'Local_2'), 0.5)
-			output = tflearn.fully_connected(tflearn.flatten(local_2), num_classes, activation='softmax', name='Output')
+
+			local_1 = tflearn.dropout(tflearn.relu(self.local(maxpool_2, 32, 3, 1, 'Local_1')), 1)
+			local_2 = tflearn.dropout(tflearn.relu(self.local(local_1, 32, 3, 1, 'Local_2')), 1)
+			flatterned = tflearn.flatten(local_2)
+			output = tflearn.fully_connected(flatterned, num_classes, activation='softmax', name='Output')
 
 		else:
 			conv_1 = tflearn.relu(tflearn.conv_2d(network, 64, 7, strides=2, bias=True, padding='VALID', name='Conv2d_1'))
@@ -85,7 +87,7 @@ class Classifier:
 			net = tflearn.flatten(FX2_out)
 			output = tflearn.fully_connected(net, num_classes, activation='softmax', name='Output')
 
-		return tflearn.regression(output, optimizer='Adam', loss='categorical_crossentropy', learning_rate=0.0001)
+		return tflearn.regression(output, optimizer='Adam', loss='categorical_crossentropy', learning_rate=0.000001)
 
 	def train(self, training_data, testing_data):
 		x, y = [m[0] for m in training_data], [n[1] for n in training_data]
@@ -103,7 +105,7 @@ class Classifier:
 	def evaluate(self, testing_data):
 		predictions = []
 		for data in testing_data:
-			predictions += (self.model.predict(data[0]), data[1])
+			predictions.append((self.model.predict([data[0]]), data[1]))
 		return [m[0] for m in predictions], [n[1] for n in predictions]
 
 	@staticmethod
