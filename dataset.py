@@ -113,34 +113,37 @@ def save_image(args, start_time, save, data, type):
 		image = cv2.imread(image_file[0], cv2.IMREAD_COLOR)
 		detections = detector(image, 1)
 		for _, detection in enumerate(detections):
-			try:
-				face = cv2.resize(image[detection.top():detection.bottom(), detection.left():detection.right()], (88, 88))
-				images = []
-				images.append(face)
-				images.append(hue(face, 5))
-				images.append(hue(face, -5))
-				images.append(noisy('sp', images[0]))
-				images.append(noisy('gauss', images[0]))
-				images.append(hue(noisy('sp', images[0]), 5))
-				images.append(hue(noisy('sp', images[0]), -5))
-				images.append(hue(noisy('gauss', images[0]), 5))
-				images.append(hue(noisy('gauss', images[0]), -5))
-				for _image in images:
-					cv2.imwrite(save + '/rgb/' + str(image_file[1]) + '/' + str(count) + '.jpg', _image)
-					#lbp_image = feature.local_binary_pattern(cv2.cvtColor(_image, cv2.COLOR_BGR2GRAY).astype(np.float64), 8, 1, 'uniform').astype(np.uint8)
-					#lbp_image *= (255 / lbp_image.max())
-					#cv2.imwrite(save + '/lbp/' + str(image_file[1]) + '/' + str(count + 1) + '.jpg', lbp_image)
-					frgb_image = front.frontalized(image)
-					if frgb_image:
-						cv2.imwrite(save + '/frgb/' + str(image_file[1]) + '/' + str(count + 2) + '.jpg', cv2.resize(frgb_image, (88,88)))
-					#flbp_image = feature.local_binary_pattern(cv2.cvtColor(frgb_image, cv2.COLOR_BGR2GRAY).astype(np.float64), 8, 1, 'uniform').astype(np.uint8)
-					#flbp_image *= (255 / flbp_image.max())
-					#cv2.imwrite(save + '/flbp/' + str(image_file[1]) + '/' + str(count + 3) + '.jpg', flbp_image)
-					count += 4
-					if count % 100 == 0:
-						main.log(args, '{:.5f}'.format(time.clock() - start_time) + 's ' + str(count) + ' ' + type +' images extracted')
-			except:
-				pass
+			#try:
+			face = image[detection.top():detection.bottom(), detection.left():detection.right()]
+			if face.shape[0] == 0:
+				continue
+			face = cv2.resize(face, (88, 88))
+			images = []
+			images.append(face)
+			images.append(hue(face, 5))
+			images.append(hue(face, -5))
+			images.append(noisy('sp', images[0]))
+			images.append(noisy('gauss', images[0]))
+			images.append(hue(noisy('sp', images[0]), 5))
+			images.append(hue(noisy('sp', images[0]), -5))
+			images.append(hue(noisy('gauss', images[0]), 5))
+			images.append(hue(noisy('gauss', images[0]), -5))
+			for _image in images:
+				cv2.imwrite(save + '/rgb/' + str(image_file[1]) + '/' + str(count) + '.jpg', _image)
+				#lbp_image = feature.local_binary_pattern(cv2.cvtColor(_image, cv2.COLOR_BGR2GRAY).astype(np.float64), 8, 1, 'uniform').astype(np.uint8)
+				#lbp_image *= (255 / lbp_image.max())
+				#cv2.imwrite(save + '/lbp/' + str(image_file[1]) + '/' + str(count + 1) + '.jpg', lbp_image)
+				frgb_image = front.frontalized(image)
+				if frgb_image:
+					cv2.imwrite(save + '/frgb/' + str(image_file[1]) + '/' + str(count + 2) + '.jpg', cv2.resize(frgb_image, (88,88)))
+				#flbp_image = feature.local_binary_pattern(cv2.cvtColor(frgb_image, cv2.COLOR_BGR2GRAY).astype(np.float64), 8, 1, 'uniform').astype(np.uint8)
+				#flbp_image *= (255 / flbp_image.max())
+				#cv2.imwrite(save + '/flbp/' + str(image_file[1]) + '/' + str(count + 3) + '.jpg', flbp_image)
+				count += 4
+				if count % 100 == 0:
+					main.log(args, '{:.5f}'.format(time.clock() - start_time) + 's ' + str(count) + ' ' + type +' images extracted')
+			#except:
+				#pass
 	main.log(args, str(time.clock() - start_time) + ' ' + type + ' Images Extracted')
 
 
@@ -222,8 +225,8 @@ def noisy(noise_typ,image):
 
 def hue(image, value):
 	image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-	for i in range(150):
-		for j in range(150):
+	for i in range(image.shape[0]):
+		for j in range(image.shape[1]):
 			if not image[i][j][0] == 0 and not image[i][j][1] == 0:
 				temp = int(image[i][j][0]) + value
 				if not temp >= 255 or not temp <= 0:
