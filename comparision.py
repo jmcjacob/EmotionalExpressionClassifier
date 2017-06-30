@@ -50,7 +50,7 @@ def retrieve_data(image_directory):
 				labels[label] = 1
 				image_file = image_directory + '/' + folder + '/' + image_file
 				image = cv2.imread(image_file, cv2.IMREAD_COLOR)
-				data.append((cv2.resize(image, (150, 150)), labels))
+				data.append((cv2.resize(image, (88, 88)), labels))
 			except:
 				pass
 		label += 1
