@@ -2,6 +2,7 @@ import run
 import time
 import dataset
 import argparse
+import runNaoqi
 import comparision
 from classify import classify
 
@@ -12,7 +13,7 @@ def parse_args():
 
 	# General
 	parser.add_argument('--mode', type=str,
-						help='Model for the system, \'train\', \'classify\', \'dataset\', \'run\', \'normalize\', \'evaluate\'')
+						help='Model for the system, \'train\', \'classify\', \'dataset\', \'run\', \'normalize\', \'naoqi\'')
 
 	parser.add_argument('--verbose', action='store_true', default=True,
 						help='Boolean flag indicating if statements should be printed to console.')
@@ -66,6 +67,15 @@ def parse_args():
 	parser.add_argument('--address', type=str,
 						help='The address to communicate with the MultiDS system.')
 
+	parser.add_argument('--ip', type=str,
+						help='The IP address for the Naoqi robot.')
+
+	parser.add_argument('--port', type=str,
+						help='The port for the Naoqi robot.')
+
+	parser.add_argument('--predictions', type=str,
+						help='How the predictions are collected. Average, Max or Entire')
+
 	return parser.parse_args()
 
 
@@ -90,6 +100,13 @@ def main():
 	elif args.mode == 'run':
 		run_thread = run.MyThread(0, args)
 		network_thread = run.MyThread(1, args)
+		run_thread.start()
+		network_thread.start()
+		while network_thread.is_alive():
+			continue
+	elif args.mode == 'naoqi':
+		run_thread = runNaoqi.MyThread(0, args)
+		network_thread = runNaoqi.MyThread(1, args)
 		run_thread.start()
 		network_thread.start()
 		while network_thread.is_alive():

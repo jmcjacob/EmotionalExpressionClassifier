@@ -30,7 +30,7 @@ class MyThread(threading.Thread):
 def run(args):
 	detector = dlib.get_frontal_face_detector()
 	front = frontalization.Front(args)
-	global predictions, running
+	global predictions, running, arguments
 	predictions, running = [], True
 	start_time = time.clock()
 	q = []
@@ -70,15 +70,36 @@ def on_error(ws, err):
 
 
 def on_data(ws, data):
-	global predictions
+	global predictions, arguments
 	print 'Recived: ' + data
 	if data == 'REQUEST':
 		string = ''
-		for i in predictions:
-			string += str(i) + ' '
+		if arguments.predictions == 'average':
+			average = np.zeros((len(predictions[0])))
+			for i in range(len(predictions[0])):
+				for prediction in predictions:
+					average[i] += prediction[i] / len(prediction)
+			for i in average:
+				string += str(i) + ' '
+			predictions = []
+		elif arguments.predictions == 'max':
+			max = np.zeros((len(predictions[0])))
+			for i in range(len(predictions[0])):
+				for prediction in predictions:
+					if max[i] < prediction[i]:
+						max[i] = prediction[i]
+			for i in max:
+				string += str(i) + ' '
+			predictions = []
+		else:
+			average = np.zeros((len(predictions[0])))
+			for i in range(len(predictions[0])):
+				for prediction in predictions:
+					average[i] += prediction[i] / len(prediction)
+			for i in average:
+				string += str(i) + ' '
 		print 'Sent: ' + string
 		ws.send(string.replace('[', '').replace(']', ''))
-		predictions = []
 	elif data == 'CLOSE':
 		ws.close()
 
