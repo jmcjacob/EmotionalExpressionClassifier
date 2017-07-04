@@ -108,6 +108,9 @@ class Classifier:
 			predictions.append((self.model.predict([data[0]]), data[1]))
 		return [m[0] for m in predictions], [n[1] for n in predictions]
 
+	def load_model(self):
+		self.model.load(self.save_path + 'model.model')
+
 	@staticmethod
 	def count_trainable_vars():
 		total_parameters = 0
