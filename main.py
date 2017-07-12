@@ -2,7 +2,7 @@ import run
 import time
 import dataset
 import argparse
-import runNaoqi
+#import runNaoqi
 import comparision
 from classify import classify
 
@@ -104,14 +104,15 @@ def main():
 		network_thread.start()
 		while network_thread.is_alive():
 			continue
-	elif args.mode == 'naoqi':
-		run_thread = runNaoqi.MyThread(0, args)
-		network_thread = runNaoqi.MyThread(1, args)
-		run_thread.start()
-		network_thread.start()
-		while network_thread.is_alive():
-			continue
+	#elif args.mode == 'naoqi':
+	#	run_thread = runNaoqi.MyThread(0, args)
+	#	network_thread = runNaoqi.MyThread(1, args)
+	#	run_thread.start()
+	#	network_thread.start()
+	#	while network_thread.is_alive():
+	#		continue
 	elif args.mode == 'normalize':
+		log(args, 'HERE')
 		start_time = time.clock()
 		if args.split_dir != 'none':
 			splits = dataset.split_images(args, start_time)
@@ -122,6 +123,5 @@ def main():
 				dataset.normalize(args, start_time, dirs=splits)
 	else:
 		log(args, 'Please select a mode using the tag --mode, use --help for help.', True)
-
 if __name__ == '__main__':
 	main()

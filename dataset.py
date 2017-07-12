@@ -1,13 +1,15 @@
 import os
 import cv2
+import csv
 import dlib
 import main
 import time
+import front as frontalization
 import random
 import shutil
 import numpy as np
-import frontalization
-from skimage import feature
+#import frontalization
+#from skimage import feature
 
 
 def build_dataset(args):
@@ -66,6 +68,37 @@ def build_dataset(args):
 						image_files.append((args.data_dir + '/' + folder + '/' + file, label))
 		main.log(args, '{:.5f}'.format(time.clock() - start_time) + 's ' + str(len(image_files)) + ' Images File Collected')
 		extract_images(args, start_time, image_files)
+
+	elif args.dataset == 'AMFED':
+		build_structure(args, start_time, 3)
+		images = []
+		for video in os.listdir(args.data_dir):
+			if video.split('.')[1] == 'avi':
+				cap = cv2.VideoCapture(args.data_dir + '/' + video)
+				with open(args.label_dir + '/' + video[:-4] + '-label.csv') as csvfile:
+					reader = csv.reader(csvfile, delimiter=',')
+					skip = True
+					for row in reader:
+						if skip:
+							skip = False
+							continue
+						if float(row[1]) > 33:
+							frame_no = float(row[0]) * 25
+							cap.set(2, int(frame_no))
+							_, frame = cap.read()
+							images.append((frame, 2))
+						elif float(row[3]) > 33:
+							frame_no = float(row[0]) * 25
+							cap.set(2, int(frame_no))
+							_, frame = cap.read()
+							images.append((frame, 1))
+						else:
+							frame_no = float(row[0]) * 25
+							cap.set(2, int(frame_no))
+							_, frame = cap.read()
+							images.append((frame, 0))
+		extract_images(args, start_time, images, False)
+
 	else:
 		main.log(args, 'Please specify a dataset \'--dataset\'', True)
 	if args.split_dir != 'none':
@@ -84,38 +117,41 @@ def build_structure(args, start_time, classes):
 			os.makedirs(folder + '/rgb')
 			for i in range(classes):
 				os.makedirs(folder + '/rgb/' + str(i))
-			os.makedirs(folder + '/lbp')
-			for i in range(classes):
-				os.makedirs(folder + '/lbp/' + str(i))
+			# os.makedirs(folder + '/lbp')
+			# for i in range(classes):
+			# 	os.makedirs(folder + '/lbp/' + str(i))
 			os.makedirs(folder + '/frgb')
 			for i in range(classes):
 				os.makedirs(folder + '/frgb/' + str(i))
-			os.makedirs(folder + '/flbp')
-			for i in range(classes):
-				os.makedirs(folder + '/flbp/' + str(i))
+			# os.makedirs(folder + '/flbp')
+			# for i in range(classes):
+			# 	os.makedirs(folder + '/flbp/' + str(i))
 	main.log(args, '{:.5f}'.format(time.clock() - start_time) + 's Folder Structure Built')
 
 
-def extract_images(args, start_time, image_files):
+def extract_images(args, start_time, image_files, images=True):
 	test_length = int(round(0.2 * len(image_files)))
 	shuffled = image_files[:]
 	random.shuffle(shuffled)
 	training_data = shuffled[test_length:]
 	testing_data = shuffled[:test_length]
-	save_image(args, start_time, args.training_dir, training_data, 'training')
-	save_image(args, start_time, args.testing_dir, testing_data, 'testing')
+	save_image(args, start_time, args.training_dir, training_data, 'training', images)
+	save_image(args, start_time, args.testing_dir, testing_data, 'testing', images)
 
 
-def save_image(args, start_time, save, data, type):
+def save_image(args, start_time, save, data, type, images=True):
 	detector, count = dlib.get_frontal_face_detector(), 0
 	front = frontalization.Front(args)
 	for image_file in data:
-		image = cv2.imread(image_file[0], cv2.IMREAD_COLOR)
+		if images:
+			image = cv2.imread(image_file[0], cv2.IMREAD_COLOR)
+		else:
+			image = image_file[0]
 		detections = detector(image, 1)
 		for _, detection in enumerate(detections):
 			#try:
 			face = image[detection.top():detection.bottom(), detection.left():detection.right()]
-			if face.shape[0] == 0:
+			if face.shape[0] < 10 or face.shape[1] < 10:
 				continue
 			face = cv2.resize(face, (88, 88))
 			images = []
@@ -129,13 +165,19 @@ def save_image(args, start_time, save, data, type):
 			images.append(hue(noisy('gauss', images[0]), 5))
 			images.append(hue(noisy('gauss', images[0]), -5))
 			for _image in images:
-				cv2.imwrite(save + '/rgb/' + str(image_file[1]) + '/' + str(count) + '.jpg', _image)
+				if images:
+					cv2.imwrite(save + '/rgb/' + str(image_file[1]) + '/' + str(count) + '.jpg', _image)
+				else:
+					cv2.imwrite(save + '/rgb/' + str(image_file[1]) + '/' + str(count) + '.jpg', _image)
 				#lbp_image = feature.local_binary_pattern(cv2.cvtColor(_image, cv2.COLOR_BGR2GRAY).astype(np.float64), 8, 1, 'uniform').astype(np.uint8)
 				#lbp_image *= (255 / lbp_image.max())
 				#cv2.imwrite(save + '/lbp/' + str(image_file[1]) + '/' + str(count + 1) + '.jpg', lbp_image)
 				frgb_image = front.frontalized(image)
-				if frgb_image:
-					cv2.imwrite(save + '/frgb/' + str(image_file[1]) + '/' + str(count + 2) + '.jpg', cv2.resize(frgb_image, (88,88)))
+				if frgb_image is None:
+					continue
+				if frgb_image.shape[0] < 10 or frgb_image.shape[1] < 10:
+					continue
+				cv2.imwrite(save + '/frgb/' + str(image_file[1]) + '/' + str(count + 2) + '.jpg', cv2.resize(frgb_image, (88,88)))
 				#flbp_image = feature.local_binary_pattern(cv2.cvtColor(frgb_image, cv2.COLOR_BGR2GRAY).astype(np.float64), 8, 1, 'uniform').astype(np.uint8)
 				#flbp_image *= (255 / flbp_image.max())
 				#cv2.imwrite(save + '/flbp/' + str(image_file[1]) + '/' + str(count + 3) + '.jpg', flbp_image)
@@ -150,7 +192,7 @@ def save_image(args, start_time, save, data, type):
 def split_images(args, start_time):
 	output_dirs = []
 	for i in [args.training_dir, args.testing_dir]:
-		for j in ['rgb', 'lbp', 'frgb', 'flbp']:
+		for j in ['rgb', 'frgb']:
 			input_dir = str(i) + '/' + str(j)
 			output_dir = args.split_dir + '/' + i.split('/')[-1] + '/' + j
 			output_dirs.append(output_dir)
@@ -177,7 +219,7 @@ def split_images(args, start_time):
 def normalize(args, start_time, dirs=[]):
 	if len(dirs) == 0:
 		for i in [args.training_dir, args.testing_dir]:
-			for j in ['rgb/', 'lbp/', 'frgb/', 'flbp/']:
+			for j in ['rgb/','frgb/']:
 				dirs.append(i + '/' + j)
 	for dir in dirs:
 		minimum, num_files = 1000000, []

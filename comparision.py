@@ -8,28 +8,28 @@ from classifier import Classifier
 
 def train(args):
 	start_time = time.clock()
-	rgb_data = [retrieve_data(args.training_dir + '/rgb'), retrieve_data(args.testing_dir + '/rgb')]
+	#rgb_data = [retrieve_data(args.training_dir + '/rgb'), retrieve_data(args.testing_dir + '/rgb')]
 	front_data = [retrieve_data(args.training_dir + '/frgb'), retrieve_data(args.testing_dir + '/frgb')]
-
-	main.log(args, '\n---------- DeXpression, No Frontalization ----------')
-	Dexrgb = Classifier(args, start_time, len(rgb_data[0][0][1]), args.resource_dir, rgb_data[0][0][0].shape, '/Dexrgb/', 'DeXpression')
-	Dexrgb.train(rgb_data[0], rgb_data[1])
+	
+	#main.log(args, '\n---------- DeXpression, No Frontalization ----------')
+	#Dexrgb = Classifier(args, start_time, len(rgb_data[0][0][1]), args.resource_dir, rgb_data[0][0][0].shape, '/Dexrgb/', 'DeXpression')
+	#Dexrgb.train(rgb_data[0], rgb_data[1])
 
 	main.log(args, '\n---------- DeXpression, Frontalization ----------')
 	Dexfront = Classifier(args, start_time, len(front_data[0][0][1]), args.resource_dir, front_data[0][0][0].shape, '/Dexfront/', 'DeXpression')
 	Dexfront.train(front_data[0], front_data[1])
 
-	main.log(args, '\n---------- DeepFace, No Frontalization ----------')
-	Deeprgb = Classifier(args, start_time, len(rgb_data[0][0][1]), args.resource_dir, rgb_data[0][0][0].shape, '/Deeprgb/', 'DeepFace')
-	Deeprgb.train(rgb_data[0], rgb_data[1])
+	#main.log(args, '\n---------- DeepFace, No Frontalization ----------')
+	#Deeprgb = Classifier(args, start_time, len(rgb_data[0][0][1]), args.resource_dir, rgb_data[0][0][0].shape, '/Deeprgb/', 'DeepFace')
+	#Deeprgb.train(rgb_data[0], rgb_data[1])
 
 	main.log(args, '\n---------- DeepFace, Frontalization ----------')
 	Deepfront = Classifier(args, start_time, len(front_data[0][0][1]), args.resource_dir, front_data[0][0][0].shape, '/Deepfront/', 'DeepFace')
 	Deepfront.train(front_data[0], front_data[1])
-
-	main.log(args, '\n---------- Song, No Frontalization ----------')
-	Songrgb = Classifier(args, start_time, len(rgb_data[0][0][1]), args.resource_dir, rgb_data[0][0][0].shape, '/Songrgb/', 'Song')
-	Songrgb.train(rgb_data[0], rgb_data[1])
+	
+	#main.log(args, '\n---------- Song, No Frontalization ----------')
+	#Songrgb = Classifier(args, start_time, len(rgb_data[0][0][1]), args.resource_dir, rgb_data[0][0][0].shape, '/Songrgb/', 'Song')
+	#Songrgb.train(rgb_data[0], rgb_data[1])
 
 	main.log(args, '\n---------- Song, Frontalization ----------')
 	Songfront = Classifier(args, start_time, len(front_data[0][0][1]), args.resource_dir, front_data[0][0][0].shape, '/Songfront/', 'Song')
