@@ -8,6 +8,7 @@ import front as frontalization
 import random
 import shutil
 import numpy as np
+import skvideo.io
 #import frontalization
 #from skimage import feature
 
@@ -74,29 +75,29 @@ def build_dataset(args):
 		images = []
 		for video in os.listdir(args.data_dir):
 			if video.split('.')[1] == 'avi':
-				cap = cv2.VideoCapture(args.data_dir + '/' + video)
-				with open(args.label_dir + '/' + video[:-4] + '-label.csv') as csvfile:
-					reader = csv.reader(csvfile, delimiter=',')
+				filename = args.data_dir + video
+				#print filename
+				try:
+					cap = skvideo.io.vread(filename)
+				except:
+					print 'Error with ' + filename
+				with open(args.label_dir + '/' + video[:-4] + '-label.csv', 'rU') as csvfile:
+					reader = csv.reader(csvfile, delimiter=',', dialect=csv.excel_tab)
 					skip = True
 					for row in reader:
 						if skip:
 							skip = False
 							continue
 						if float(row[1]) > 33:
-							frame_no = float(row[0]) * 25
-							cap.set(2, int(frame_no))
-							_, frame = cap.read()
-							images.append((frame, 2))
+							frame_no = float(row[0]) * 14
+							images.append((cap[int(frame_no)], 2))
 						elif float(row[3]) > 33:
-							frame_no = float(row[0]) * 25
-							cap.set(2, int(frame_no))
-							_, frame = cap.read()
-							images.append((frame, 1))
+							frame_no = float(row[0]) * 14
+							images.append((cap[int(frame_no)], 1))
 						else:
-							frame_no = float(row[0]) * 25
-							cap.set(2, int(frame_no))
-							_, frame = cap.read()
-							images.append((frame, 0))
+							frame_no = float(row[0]) * 14
+							images.append((cap[int(frame_no)], 0))
+		main.log(args, '{:.5f}'.format(time.clock() - start_time) + 's ' + str(len(images)) + ' Images File Collected')
 		extract_images(args, start_time, images, False)
 
 	else:
